@@ -1,0 +1,984 @@
+openapi: 3.0.3
+info:
+  title: HireHub API
+  description: |
+    REST API for HireHub - a job discovery and recruitment platform connecting job seekers and employers.
+
+    Features include:
+    - Role-based authentication (job seeker / employer)
+    - Job seeker profile, resume upload, skill management
+    - Company profile and job posting management
+    - Public job search with filtering & pagination
+    - Bookmarking jobs
+    - Job applications with status workflow
+  version: 1.1.0
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User registration, login, token refresh, and current user info
+  - name: Job Seeker Profile
+    description: Manage personal details and resume (job seekers only)
+  - name: Job Seeker Skills
+    description: Attach and remove skills from job seeker profile
+  - name: Bookmarks
+    description: Save and manage favorite job postings (job seekers)
+  - name: Companies
+    description: Employer company profile creation and management
+  - name: Job Categories
+    description: Public list of job categories
+  - name: Skills
+    description: Public list of all available skills
+  - name: Jobs
+    description: Employer job posting creation, update, delete, close
+  - name: Job Discovery
+    description: Public job search and detailed view
+  - name: Job Applications
+    description: Apply to jobs and view own applications (job seekers)
+  - name: Application Management
+    description: Employer actions on received applications (status updates)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token obtained after successful login or refresh
+
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Standard format for error responses
+      required: [message]
+      properties:
+        message:
+          type: string
+          description: Human-readable error explanation
+        code:
+          type: string
+          description: Optional machine-readable error identifier
+          example: INVALID_TOKEN
+        details:
+          type: object
+          description: Optional structured error details
+          additionalProperties: true
+
+    Uuid:
+      type: string
+      format: uuid
+      description: Universally unique identifier
+      example: "123e4567-e89b-12d3-a456-426614174000"
+
+    Skill:
+      type: object
+      description: A single skill entity
+      properties:
+        id:
+          type: integer
+          description: Unique numeric skill identifier
+        name:
+          type: string
+          description: Name of the skill
+          example: "React"
+
+    JobCategory:
+      type: object
+      description: Job category / industry classification
+      properties:
+        id:
+          type: integer
+          description: Unique category ID
+        name:
+          type: string
+          description: Category name
+          example: "Information Technology"
+
+    JobSeekerProfile:
+      type: object
+      description: Personal profile data for job seekers
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        firstName:
+          type: string
+          description: Seeker's first name
+        lastName:
+          type: string
+          description: Seeker's last name
+        bio:
+          type: string
+          nullable: true
+          description: Short professional bio
+        experienceLevel:
+          type: string
+          enum: [entry_level, junior, mid_level, senior, lead, executive]
+          nullable: true
+          description: Years/expertise level indicator
+        resumeUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Public URL to uploaded resume
+        createdAt:
+          type: string
+          format: date-time
+
+    Company:
+      type: object
+      description: Employer company profile
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+          description: Official company name
+        websiteUrl:
+          type: string
+          format: uri
+          nullable: true
+        locationUrl:
+          type: string
+          nullable: true
+          description: Google Maps / location link or address string
+        logoUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Company logo URL
+
+    Job:
+      type: object
+      description: A job posting entity
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        title:
+          type: string
+          description: Job title
+          example: "Senior Backend Engineer"
+        description:
+          type: string
+          description: Full job description (HTML or markdown supported)
+        jobType:
+          type: string
+          enum: [full_time, part_time, contract, internship, freelance]
+          description: Employment type
+        workMode:
+          type: string
+          enum: [on_site, hybrid, remote]
+          description: Work location mode
+        jobLocationUrl:
+          type: string
+          nullable: true
+          description: Location link or address
+        salaryMin:
+          type: number
+          nullable: true
+          description: Minimum salary (annual or monthly depending on context)
+        salaryMax:
+          type: number
+          nullable: true
+          description: Maximum salary
+        expLevel:
+          type: string
+          enum: [entry_level, junior, mid_level, senior, lead, executive]
+          description: Required experience level
+        keyResponsibilities:
+          type: string
+          nullable: true
+          description: Key duties and responsibilities
+        professionalSkills:
+          type: string
+          nullable: true
+          description: Required professional skills (text or comma-separated)
+        category:
+          $ref: '#/components/schemas/JobCategory'
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+          description: Associated skills (from /skills)
+        isOpen:
+          type: boolean
+          description: Whether the job is still accepting applications
+        deadline:
+          type: string
+          format: date
+          nullable: true
+          description: Application deadline
+        company:
+          $ref: '#/components/schemas/Company'
+        createdAt:
+          type: string
+          format: date-time
+
+    Application:
+      type: object
+      description: Job application submitted by a seeker
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        jobId:
+          $ref: '#/components/schemas/Uuid'
+        seekerId:
+          $ref: '#/components/schemas/Uuid'
+        coverLetterUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Optional cover letter file URL
+        status:
+          type: string
+          enum: [applied, under_review, shortlisted, rejected, withdrawn]
+          description: Current status of the application
+        appliedAt:
+          type: string
+          format: date-time
+          description: Timestamp when application was submitted
+
+    SkillIdsRequest:
+      type: object
+      description: Payload for bulk skill add/remove operations
+      required: [skillIds]
+      properties:
+        skillIds:
+          type: array
+          items:
+            type: integer
+          description: List of skill identifiers
+
+    JobIdsRequest:
+      type: object
+      description: Payload for bulk bookmark removal
+      required: [jobIds]
+      properties:
+        jobIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Uuid'
+
+    PaginatedResponse:
+      type: object
+      description: Generic paginated list response
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+  responses:
+    Unauthorized:
+      description: Missing, invalid or expired authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request parameters or payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Resource conflict (e.g. duplicate entry)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Authenticated but lacks permission for this action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user account
+      description: Creates a job seeker or employer account. Email verification may be required afterward.
+      requestBody:
+        required: true
+        description: Registration details
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, role]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                role:
+                  type: string
+                  enum: [job_seeker, employer]
+      responses:
+        '201':
+          description: User account created successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Authenticate user and receive tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id: { $ref: '#/components/schemas/Uuid' }
+                      email: { type: string }
+                      role: { type: string, enum: [job_seeker, employer] }
+
+  /auth/refresh-token:
+    post:
+      tags: [Authentication]
+      summary: Obtain new access token using refresh token
+      responses:
+        '200':
+          description: New tokens issued successfully
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Invalidate current session
+      responses:
+        '200':
+          description: Logout successful
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current authenticated user
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { $ref: '#/components/schemas/Uuid' }
+                  email: { type: string }
+                  role: { type: string, enum: [job_seeker, employer] }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /job-seeker/profile:
+    get:
+      tags: [Job Seeker Profile]
+      summary: Retrieve authenticated job seeker's profile
+      responses:
+        '200':
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobSeekerProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    put:
+      tags: [Job Seeker Profile]
+      summary: Update job seeker profile fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                bio: { type: string }
+                experienceLevel:
+                  type: string
+                  enum: [entry_level, junior, mid_level, senior, lead, executive]
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobSeekerProfile'
+
+  /job-seeker/profile/resume:
+    post:
+      tags: [Job Seeker Profile]
+      summary: Upload or replace resume (PDF)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [resume]
+              properties:
+                resume:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Resume uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resumeUrl: { type: string, format: uri }
+
+  /job-seeker/skills:
+    get:
+      tags: [Job Seeker Skills]
+      summary: List skills on current seeker's profile
+      responses:
+        '200':
+          description: List of skills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Skill'
+
+    post:
+      tags: [Job Seeker Skills]
+      summary: Add skills to profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillIdsRequest'
+      responses:
+        '201':
+          description: Skills added
+
+    delete:
+      tags: [Job Seeker Skills]
+      summary: Bulk remove skills
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillIdsRequest'
+      responses:
+        '200':
+          description: Skills removed
+
+  /job-seeker/skills/{skillId}:
+    delete:
+      tags: [Job Seeker Skills]
+      summary: Remove single skill
+      parameters:
+        - name: skillId
+          in: path
+          required: true
+          description: Skill numeric ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Skill removed
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /job-seeker/bookmarks:
+    get:
+      tags: [Bookmarks]
+      summary: List bookmarked jobs
+      responses:
+        '200':
+          description: List of bookmarked jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+
+    delete:
+      tags: [Bookmarks]
+      summary: Bulk remove bookmarks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobIdsRequest'
+      responses:
+        '200':
+          description: Bookmarks removed
+
+  /job-seeker/bookmarks/{jobId}:
+    post:
+      tags: [Bookmarks]
+      summary: Bookmark a job
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Job bookmarked
+        '409':
+          description: Already bookmarked
+
+    delete:
+      tags: [Bookmarks]
+      summary: Remove bookmark
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Bookmark removed
+
+  /employer/company:
+    post:
+      tags: [Companies]
+      summary: Create company profile (required before posting jobs)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 2 }
+                websiteUrl: { type: string, format: uri }
+                locationUrl: { type: string }
+      responses:
+        '201':
+          description: Company created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+
+  /employer/profile:
+    get:
+      tags: [Companies]
+      summary: Get own company profile
+      responses:
+        '200':
+          description: Company details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Companies]
+      summary: Update company profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                websiteUrl: { type: string, format: uri }
+                locationUrl: { type: string }
+      responses:
+        '200':
+          description: Company updated
+
+  /employer/profile/logo:
+    post:
+      tags: [Companies]
+      summary: Upload company logo
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [logo]
+              properties:
+                logo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Logo uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logoUrl: { type: string, format: uri }
+
+  /job-categories:
+    get:
+      tags: [Job Categories]
+      summary: List all job categories
+      description: Public – no auth required
+      responses:
+        '200':
+          description: Categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobCategory'
+
+  /skills:
+    get:
+      tags: [Skills]
+      summary: List all available skills
+      description: Public – used when attaching skills
+      responses:
+        '200':
+          description: Skills list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Skill'
+
+  /employer/jobs:
+    post:
+      tags: [Jobs]
+      summary: Create new job posting
+      description: Employer only. Company profile must exist.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, description, jobType, workMode, categoryId]
+              properties:
+                title: { type: string }
+                description: { type: string }
+                jobType:
+                  type: string
+                  enum: [full_time, part_time, contract, internship, freelance]
+                workMode:
+                  type: string
+                  enum: [on_site, hybrid, remote]
+                jobLocationUrl: { type: string, nullable: true }
+                salaryMin: { type: number, nullable: true }
+                salaryMax: { type: number, nullable: true }
+                expLevel:
+                  type: string
+                  enum: [entry_level, junior, mid_level, senior, lead, executive]
+                keyResponsibilities: { type: string, nullable: true }
+                professionalSkills: { type: string, nullable: true }
+                categoryId: { type: integer }
+                skillIds:
+                  type: array
+                  items: { type: integer }
+                deadline:
+                  type: string
+                  format: date
+                  nullable: true
+      responses:
+        '201':
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+
+    get:
+      tags: [Jobs]
+      summary: List jobs posted by current employer
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paginated list of employer's jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+                # data: Job[]
+
+  /employer/jobs/{jobId}:
+    put:
+      tags: [Jobs]
+      summary: Update existing job posting
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'  # partial allowed
+      responses:
+        '200':
+          description: Job updated
+
+    delete:
+      tags: [Jobs]
+      summary: Delete job posting
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Job deleted (or 204 No Content)
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /employer/jobs/{jobId}/close:
+    patch:
+      tags: [Jobs]
+      summary: Close job posting (stop accepting applications)
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Job closed (isOpen = false)
+
+  /jobs:
+    get:
+      tags: [Job Discovery]
+      summary: Search and list open jobs
+      description: Public endpoint with filtering and pagination
+      parameters:
+        - name: keyword
+          in: query
+          schema: { type: string }
+          description: Search in title/description
+        - name: category
+          in: query
+          schema: { type: integer }
+          description: Category ID
+        - name: workMode
+          in: query
+          schema: { type: string }
+        - name: jobType
+          in: query
+          schema: { type: string }
+        - name: skills
+          in: query
+          schema: { type: string }
+          description: Comma-separated skill IDs
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paginated job listings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+                # data: Job[]
+
+  /jobs/{jobId}:
+    get:
+      tags: [Job Discovery]
+      summary: Get detailed job information
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jobs/{jobId}/apply:
+    post:
+      tags: [Job Applications]
+      summary: Submit application to a job
+      description: Job seeker only. Optional cover letter upload.
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                coverLetter:
+                  type: string
+                  format: binary
+                  description: Optional PDF cover letter
+      responses:
+        '201':
+          description: Application submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '409':
+          description: Already applied
+
+  /job-seeker/applications:
+    get:
+      tags: [Job Applications]
+      summary: List applications submitted by current seeker
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+
+  /applications/{applicationId}:
+    get:
+      tags: [Job Applications]
+      summary: Get detailed application info (seeker view)
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Application detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    delete:
+      tags: [Job Applications]
+      summary: Withdraw application
+      description: Only allowed if status = applied
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Application withdrawn
+
+  /applications/{applicationId}/status:
+    patch:
+      tags: [Application Management]
+      summary: Update application status (employer only)
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [under_review, shortlisted, rejected]
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '403':
+          $ref: '#/components/responses/Forbidden'
