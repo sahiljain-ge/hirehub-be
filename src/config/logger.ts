@@ -1,5 +1,6 @@
 import winston from 'winston';
 import path from 'path';
+import { NODE_ENV } from './server-config.js';
 
 const customFormat = winston.format.printf(({ level, message, timestamp, stack, ...meta }) => {
   const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
@@ -9,7 +10,7 @@ const customFormat = winston.format.printf(({ level, message, timestamp, stack, 
 });
 
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: NODE_ENV === 'production' ? 'info' : 'debug',
 
   defaultMeta: { service: 'hirehub-api' },
 
@@ -17,7 +18,7 @@ const logger = winston.createLogger({
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
-    process.env.NODE_ENV === 'production'
+    NODE_ENV === 'production'
       ? winston.format.json()
       : winston.format.combine(
           winston.format.colorize(),
@@ -40,7 +41,7 @@ const logger = winston.createLogger({
     }),
 
     new winston.transports.Console({
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+      level: NODE_ENV === 'production' ? 'info' : 'debug',
     }),
   ],
 
@@ -57,7 +58,7 @@ const logger = winston.createLogger({
   ],
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (NODE_ENV !== 'production') {
   logger.add(
     new winston.transports.Console({
       format: winston.format.combine(

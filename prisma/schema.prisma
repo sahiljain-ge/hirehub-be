@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  role        Role
+  is_verified Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  company     Company?
+  jobSeeker   JobSeeker?
+}
+
+model Company {
+  id           String @id @default(uuid())
+  name         String
+  website_url  String
+  location_url String
+  logo_url     String
+
+  employer_id  String @unique
+  employer     User   @relation(fields: [employer_id], references: [id])
+
+  jobs         Job[]
+}
+
+model JobSeeker {
+  id               String @id @default(uuid())
+  user_id          String @unique
+  user             User   @relation(fields: [user_id], references: [id])
+
+  first_name       String
+  last_name        String?
+  resume_url       String
+  experience_level ExperienceLevel
+  bio              String
+
+  skills           JobSeekerSkill[]
+  applications     Application[]
+}
+
+model Job {
+  id                    String @id @default(uuid())
+  title                 String
+  description           String
+  job_type              JobType
+  min_qualifications    MIN_QUALIFICATION
+  key_responsibilities  String
+  professional_skills   String
+  job_location_url      String
+  work_mode             WorkMode
+  salary_min            Int
+  salary_max            Int
+  experience_level      ExperienceLevel
+  is_open               Boolean  @default(true)
+  deadline              DateTime
+
+  company_id            String
+  company               Company @relation(fields: [company_id], references: [id])
+
+  category_id           Int
+  category              JobCategory @relation(fields: [category_id], references: [id])
+
+  address_id            Int         
+
+  skills                JobSkill[]
+  applications          Application[]
+
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  address               Adresses @relation(fields: [address_id], references: [id])
+}
+
+model Adresses {
+  id            Int     @id @default(autoincrement())
+  city          String
+  state         String 
+  country       String
+  postal_code   String
+
+  job           Job[]
+
+}
+
+model Application {
+  id                String @id @default(uuid())
+  job_id            String
+  seeker_id         String
+  cover_letter_url  String?
+  status            ApplicationStatus
+  applied_at        DateTime @default(now())
+
+  job               Job       @relation(fields: [job_id], references: [id])
+  seeker            JobSeeker @relation(fields: [seeker_id], references: [id])
+
+  @@unique([job_id, seeker_id])
+}
+
+model JobSeekerSkill {
+  seeker_id String
+  skill_id  Int
+
+  seeker JobSeeker @relation(fields: [seeker_id], references: [id])
+  skill  Skill     @relation(fields: [skill_id], references: [id])
+
+  @@id([seeker_id, skill_id])
+}
+
+model JobSkill {
+  job_id   String
+  skill_id Int
+
+  job   Job   @relation(fields: [job_id], references: [id])
+  skill Skill @relation(fields: [skill_id], references: [id])
+
+  @@id([job_id, skill_id])
+}
+
+model Skill {
+  id    Int    @id @default(autoincrement())
+  name  String
+
+  jobSeekers JobSeekerSkill[]
+  jobs       JobSkill[]
+}
+
+model JobCategory {
+  id    Int    @id @default(autoincrement())
+  name  String
+
+  jobs  Job[]
+}
+
+enum Role {
+  JOB_SEEKER
+  EMPLOYER
+}
+
+enum ExperienceLevel {
+  NO_EXP
+  FRESHER
+  INTERMEDIATE
+  EXPERT
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkMode {
+  HYBRID
+  WFO
+  WFH
+  REMOTE
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  REJECTED
+}
+
+enum MIN_QUALIFICATION {
+  MASTERS
+  BACHELORS
+  DIPLOMA
+  HIGH_SCHOOL
+  HIGHER_SECONDARY
+}
