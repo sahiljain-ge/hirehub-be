@@ -23,7 +23,8 @@ const errorHandler: ErrorRequestHandler = (
   });
 
   res.status(error.statusCode).json({
-    status: error.statusCode >= 500 ? 'error' : 'fail',
+    statusCode: error.statusCode,
+    success: error.statusCode > 400 ? false : true,
     message: error.message,
     ...(process.env.NODE_ENV !== 'production' && {
       stack: error.stack,
