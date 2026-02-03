@@ -5,7 +5,7 @@ import YAML from 'yamljs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middlewares/errorHandler.js';
-
+import apiRoutes from './routes/index.js';
 const app: Application = express();
 
 app.use(express.json());
@@ -15,7 +15,7 @@ const swaggerDocument = YAML.load(join(__dirname, '../docs/API.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get('/', (req: Request, res: Response) => res.send('Working'));
-
+app.use('/api', apiRoutes);
 app.use(errorHandler);
 
 export default app;

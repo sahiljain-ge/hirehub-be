@@ -20,10 +20,7 @@ const logger = winston.createLogger({
     winston.format.splat(),
     NODE_ENV === 'production'
       ? winston.format.json()
-      : winston.format.combine(
-          winston.format.colorize(),
-          customFormat
-        )
+      : winston.format.combine(winston.format.colorize(), customFormat),
   ),
 
   transports: [
@@ -61,11 +58,8 @@ const logger = winston.createLogger({
 if (NODE_ENV !== 'production') {
   logger.add(
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-    })
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+    }),
   );
 }
 

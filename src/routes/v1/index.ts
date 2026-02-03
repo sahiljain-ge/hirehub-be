@@ -1,8 +1,7 @@
 import express from 'express';
-import V1Routes from './v1/index.js';
-
+import jobRoutes from './jobs.route.js';
 const router = express.Router();
 
-router.use('/v1', V1Routes);
+router.use('/employer/jobs', jobRoutes);
 
 export default router;
