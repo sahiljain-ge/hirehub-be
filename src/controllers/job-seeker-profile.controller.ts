@@ -5,6 +5,7 @@ import {
     uploadJobSeekerResume as uploadJobSeekerResumeService,
 } from "../services/job-seeker-profile.service.js";
 
+type RequestWithFile = Request & { file?: { path?: string } };
 
 const getJobSeekerProfile = async (req: Request, res: Response) => {
     const userId = req.user!.id;
@@ -35,7 +36,7 @@ const updateJobSeekerProfile = async (req: Request, res: Response) => {
     return res.status(200).json(updatedProfile);
 };
 
-const uploadJobSeekerResume = async (req: Request, res: Response) => {
+const uploadJobSeekerResume = async (req: RequestWithFile, res: Response) => {
     const jobSeekerProfile = await getJobSeekerProfileService(req.user!.id);
 
     if (!jobSeekerProfile) {
