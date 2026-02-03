@@ -3,9 +3,9 @@ import {
   getJobSeekerProfile,
   updateJobSeekerProfile,
   uploadJobSeekerResume,
-} from "../controllers/job-seeker-profile.controller.js";
-import { upload } from "../utils/upload.js";
-import { dummyAuth } from "../middlewares/dummyAuth.middleware.js";
+} from "../../controllers/job-seeker-profile.controller.js";
+import { upload } from "../../utils/upload.js";
+import { dummyAuth } from "../../middlewares/dummyAuth.middleware.js";
 
 const jobSeekerRouter = Router();
 
