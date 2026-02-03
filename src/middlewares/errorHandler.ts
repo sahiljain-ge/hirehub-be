@@ -2,18 +2,10 @@ import type { ErrorRequestHandler } from 'express';
 import logger from '../config/logger.js';
 import AppError from '../utils/AppError.js';
 
-const errorHandler: ErrorRequestHandler = (
-  err,
-  req,
-  res,
-  next
-) => {
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   void next;
 
-  const error =
-    err instanceof AppError
-      ? err
-      : new AppError('Internal Server Error', 500, false);
+  const error = err instanceof AppError ? err : new AppError('Internal Server Error', 500, false);
 
   logger.error(error.message, {
     stack: error.stack,
