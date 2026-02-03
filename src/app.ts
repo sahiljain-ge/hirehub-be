@@ -11,6 +11,7 @@ import cors from 'cors';
 //  -----  Routes Import  ----- 
 import skillRouter from './routes/skills.route.js';
 import jobCategoriesRouter from './routes/job-categories.routes.js';
+import jobSeekerRouter from './routes/job-seeker-profile.routes.js';
 
 
 const app: Application = express();
@@ -29,7 +30,7 @@ app.get('/', (req: Request, res: Response) => res.send('Working'));
 //  -----  Routes Use  ----- 
 app.use('/api/v1/skills', skillRouter)
 app.use('/api/v1/job-categories', jobCategoriesRouter)
-
+app.use('/api/v1/job-seeker/profile', jobSeekerRouter)
 app.use(errorHandler);
 
 export default app;
