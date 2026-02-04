@@ -1,13 +1,22 @@
 import winston from 'winston';
 import path from 'path';
+import fs from 'fs';
 import { NODE_ENV } from './server-config.js';
 
-const customFormat = winston.format.printf(({ level, message, timestamp, stack, ...meta }) => {
-  const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-  return stack
-    ? `[${timestamp}] ${level.toUpperCase()}: ${message} - ${stack}${metaStr}`
-    : `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
-});
+const logDir = 'logs';
+fs.mkdirSync(logDir, { recursive: true });
+
+const devFormat = winston.format.printf(
+  ({ level, message, timestamp, stack, ...meta }) => {
+    const metaStr = Object.keys(meta).length
+      ? ` ${JSON.stringify(meta)}`
+      : '';
+
+    return stack
+      ? `[${timestamp}] ${level.toUpperCase()}: ${message}\n${stack}${metaStr}`
+      : `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
+  },
+);
 
 const logger = winston.createLogger({
   level: NODE_ENV === 'production' ? 'info' : 'debug',
@@ -20,47 +29,42 @@ const logger = winston.createLogger({
     winston.format.splat(),
     NODE_ENV === 'production'
       ? winston.format.json()
-      : winston.format.combine(winston.format.colorize(), customFormat),
+      : winston.format.combine(
+          winston.format.colorize(),
+          devFormat,
+        ),
   ),
 
   transports: [
-    new winston.transports.File({
-      filename: path.join('logs', 'error.log'),
-      level: 'error',
-      maxsize: 5242880,
-      maxFiles: 10,
-    }),
-
-    new winston.transports.File({
-      filename: path.join('logs', 'combined.log'),
-      maxsize: 5242880,
-      maxFiles: 10,
-    }),
-
     new winston.transports.Console({
       level: NODE_ENV === 'production' ? 'info' : 'debug',
+    }),
+
+    new winston.transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error',
+      maxsize: 5 * 1024 * 1024,
+      maxFiles: 10,
+    }),
+
+    new winston.transports.File({
+      filename: path.join(logDir, 'combined.log'),
+      maxsize: 5 * 1024 * 1024,
+      maxFiles: 10,
     }),
   ],
 
   exceptionHandlers: [
     new winston.transports.File({
-      filename: path.join('logs', 'exceptions.log'),
+      filename: path.join(logDir, 'exceptions.log'),
     }),
   ],
 
   rejectionHandlers: [
     new winston.transports.File({
-      filename: path.join('logs', 'rejections.log'),
+      filename: path.join(logDir, 'rejections.log'),
     }),
   ],
 });
-
-if (NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
-    }),
-  );
-}
 
 export default logger;

@@ -1,27 +1,30 @@
-import type { ErrorRequestHandler } from 'express';
-import logger from '../config/logger.js';
-import AppError from '../utils/AppError.js';
+import { ErrorRequestHandler } from "express";
+import logger from "../config/logger.js";
+import { sendError } from "../utils/responseFormatter.js";
+import AppError from "../utils/AppError.js";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  void next;
-
-  const error = err instanceof AppError ? err : new AppError('Internal Server Error', 500, false);
+  // Wrap unknown errors in AppError
+  const error =
+    err instanceof AppError
+      ? err
+      : new AppError('Internal Server Error', 500, false, err instanceof Error ? err : undefined);
 
   logger.error(error.message, {
-    stack: error.stack,
+    originalError: error.originalError
+      ? {
+          name: error.originalError.name,
+          message: error.originalError.message,
+          stack: error.originalError.stack,
+        }
+      : undefined,
     url: req.originalUrl,
     method: req.method,
     ip: req.ip,
   });
 
-  res.status(error.statusCode).json({
-    status: error.statusCode >= 500 ? 'error' : 'fail',
-    message: error.message,
-    ...(process.env.NODE_ENV !== 'production' && {
-      stack: error.stack,
-      error,
-    }),
-  });
+  sendError(res, error.message, error.statusCode);
 };
 
 export default errorHandler;
