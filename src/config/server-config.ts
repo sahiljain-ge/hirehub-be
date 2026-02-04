@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-export const { 
+export const {
   PORT,
   NODE_ENV,
   DATABASE_URL,
@@ -8,5 +8,8 @@ export const {
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
-  BCRYPT_SALT
+  BCRYPT_SALT,
+  EMAIL_HOST_NAME,
+  EMAIL,
+  EMAIL_PASS
 } = process.env;
