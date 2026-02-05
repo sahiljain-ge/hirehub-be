@@ -1,4 +1,4 @@
-const otpTemplate = (name: string, otp: string) => {
+const otpTemplate = (otp: string) => {
   return (
     `<!DOCTYPE html>
 <html>
@@ -21,7 +21,7 @@ const otpTemplate = (name: string, otp: string) => {
           <!-- Body -->
           <tr>
             <td style="padding: 40px 30px; line-height: 1.6;">
-              <p style="font-size: 16px; margin-bottom: 20px;">Hello, ${name}</p>
+              <p style="font-size: 16px; margin-bottom: 20px;">Hello,</p>
               <p style="font-size: 16px; margin-bottom: 30px;">Thank you for choosing <b>HireHub</b>. To complete your registration and secure your account, please enter the following code. For your security, it will <span style="color:red">expire in 5 minutes</span>.</p>
               
               <div style="text-align: center; margin: 30px 0;">
