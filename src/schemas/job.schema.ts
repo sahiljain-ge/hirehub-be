@@ -1,4 +1,4 @@
-import { number, z } from 'zod';
+import { z } from 'zod';
 import { ExperienceLevel, JobType, MIN_QUALIFICATION, WorkMode } from '../generated/enums.js';
 
 export const createJobSchema = z.object({
