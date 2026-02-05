@@ -5,7 +5,6 @@ import AppError from "../utils/AppError.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  // Wrap unknown errors in AppError
   const error =
     err instanceof AppError
       ? err

@@ -7,7 +7,7 @@ class AppError extends Error {
     message: string,
     statusCode: number,
     isOperational = true,
-    originalError?: Error 
+    originalError?: Error
   ) {
     super(message);
 
