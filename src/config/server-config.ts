@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 export const {
   PORT,
+  CLIENT_URL,
   NODE_ENV,
   DATABASE_URL,
   ACCESS_TOKEN_SECRET,
