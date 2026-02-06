@@ -1,7 +1,7 @@
 import logger from '../config/logger.js';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import otpGenerator from 'otp-generator';
-import db from '../config/prisma.js'
+import db from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 import { StatusCodes } from 'http-status-codes';
 import sendEmail from '../email/email.sender.js';
@@ -12,8 +12,13 @@ class UserRepository {
   async create(data: CreateUser) {
     const existedUser = await db.user.findFirst({ where: { email: data.email } });
     if (existedUser) throw new AppError('User Already existed', 400);
-    
-    const otp = otpGenerator.generate(6, { digits: true, lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false })
+
+    const otp = otpGenerator.generate(6, {
+      digits: true,
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
 
     const hashedOTP = await bcrypt.hash(otp, 12);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
@@ -25,16 +30,16 @@ class UserRepository {
         ...data,
         password: hashedPassword,
         otp: hashedOTP,
-        expires_at: expiresAt
+        expires_at: expiresAt,
       },
     });
     return;
   }
 
   async findByEmail(email: string) {
-    const user = await db.user.findUnique({ 
-      where: { 
-        email 
+    const user = await db.user.findUnique({
+      where: {
+        email,
       },
     });
     return user;
@@ -43,14 +48,15 @@ class UserRepository {
   async findUserById(id: string) {
     return await db.user.findUnique({
       where: {
-        id: id, 
-        is_verified: true},
+        id: id,
+        is_verified: true,
+      },
       select: {
         email: true,
         role: true,
         is_verified: true,
-        created_at: true
-      }
+        created_at: true,
+      },
     });
   }
 
@@ -58,26 +64,26 @@ class UserRepository {
     const user = await db.user.findUnique({
       where: {
         email: email,
-      }
+      },
     });
 
-    if(!user) throw new AppError('User with this email not found', StatusCodes.NOT_FOUND);
+    if (!user) throw new AppError('User with this email not found', StatusCodes.NOT_FOUND);
 
     if (user && user.otp && user.expires_at) {
-      if (user.expires_at < new Date()) throw new AppError('OTP Expired', StatusCodes.BAD_REQUEST)
-      const isVerified = await bcrypt.compare(otp, user.otp)
+      if (user.expires_at < new Date()) throw new AppError('OTP Expired', StatusCodes.BAD_REQUEST);
+      const isVerified = await bcrypt.compare(otp, user.otp);
       if (!isVerified) {
-        throw new AppError('Invalid otp', StatusCodes.BAD_REQUEST)
+        throw new AppError('Invalid otp', StatusCodes.BAD_REQUEST);
       }
       await db.user.update({
         where: {
-          email: email
+          email: email,
         },
         data: {
-          is_verified: true
-        }
+          is_verified: true,
+        },
       });
-    return true;
+      return true;
     }
     return false;
   }
@@ -86,14 +92,13 @@ class UserRepository {
     try {
       const users = await db.user.findMany({
         where: {
-          is_verified: true
+          is_verified: true,
         },
         select: {
           id: true,
           email: true,
           role: true,
         },
-        
       });
       if (!users) throw new AppError('no users found', 404);
       return users;

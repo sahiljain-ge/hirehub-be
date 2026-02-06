@@ -24,5 +24,3 @@ export const validateJobData =
       next(error);
     }
   };
-
-  

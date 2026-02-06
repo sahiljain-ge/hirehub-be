@@ -1,7 +1,7 @@
-import { ErrorRequestHandler } from "express";
-import logger from "../config/logger.js";
-import { sendError } from "../utils/responseFormatter.js";
-import AppError from "../utils/AppError.js";
+import { ErrorRequestHandler } from 'express';
+import logger from '../config/logger.js';
+import { sendError } from '../utils/responseFormatter.js';
+import AppError from '../utils/AppError.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {

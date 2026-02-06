@@ -1,59 +1,59 @@
 import { Request, Response } from 'express';
 import JobService from '../services/job.service.js';
 import { StatusCodes } from 'http-status-codes';
-import { CreateJobBody } from '../schemas/job.schema.js';
+import type { CreateJobBody } from '../schemas/job.schema.js';
 import { UUID } from 'node:crypto';
+import { sendError, sendSuccess } from '../utils/responseFormatter.js';
 
 class JobController {
-  constructor(private jobService: JobService) { }
-  createJob = async (req: Request, res: Response) => {
+  constructor(private jobService: JobService) {
+    this.createJob = this.createJob.bind(this);
+    this.getAllJobs = this.getAllJobs.bind(this);
+    this.getAllJobsOfEmp = this.getAllJobsOfEmp.bind(this);
+    this.getJobById = this.getJobById.bind(this);
+    this.updateJobStatus = this.updateJobStatus.bind(this);
+    this.deleteJobById = this.deleteJobById.bind(this);
+  }
+
+  async createJob(req: Request, res: Response) {
     const jobData: CreateJobBody = req.body;
     const response = await this.jobService.createJob(jobData);
-    return res.status(StatusCodes.CREATED).json({
-      response,
-    });
-  };
-
-  getAllJobsOfEmp = async () => {
-
+    sendSuccess(res, response, 'Successfully created a job');
   }
 
-  updateJobStatus = async () => {
-
+  async getAllJobsOfEmp(req: Request, res: Response) {
+    const empId = <UUID>req.user?.id || '';
+    const jobs = await this.jobService.getAllJobsOfEmp(empId);
+    return sendSuccess(res, jobs, 'Successfully fetched your all posted jobs');
   }
 
-  getAllJobs = async (req: Request, res: Response) => {
+  async updateJobStatus(req: Request, res: Response) {
+    const jobId = <UUID>req.params.id;
+    const empId = <UUID>req.user?.id || '';
+    const updatedJob = await this.jobService.updateJobStatus(jobId, empId);
+    return sendSuccess(res, updatedJob, 'Successfully job status updated', StatusCodes.OK);
+  }
+
+  async deleteJobById(req: Request, res: Response) {
+    const jobId = <UUID>req.params.id;
+    const empId = <UUID>req.user?.id;
+    const response = await this.jobService.deleteJobById(jobId, empId);
+    return sendSuccess(res, { jobDeleted: response }, 'Successfully deleted');
+  }
+
+  async getAllJobs(req: Request, res: Response) {
     const jobs = await this.jobService.getAllJobs();
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: 'Fetched all available jobs',
-      jobs,
-    });
-  };
+    return sendSuccess(res, jobs, 'Succssfully fetched all jobs', StatusCodes.OK);
+  }
 
-  getJobById = async (req: Request, res: Response) => {
-    const id = <UUID>req.params.id;
-    const response = await this.jobService.getJobById(id);
-    if (typeof response === 'string')
-      return res.status(StatusCodes.NOT_ACCEPTABLE).json({
-        msg: response,
-        status: false
-      })
+  async getJobById(req: Request, res: Response) {
+    const jobId = <UUID>req.params.id;
+    const response = await this.jobService.getJobById(jobId);
+    if (typeof response === 'string') return sendError(res, response, StatusCodes.NOT_FOUND);
     const skills = response.skills.map(({ skill }) => ({ id: skill.id, name: skill.name }));
     const job = { ...response, skills: skills };
-    return res.status(StatusCodes.OK).json({
-      job,
-    });
-  };
-
-  deleteJobById = async (req: Request, res: Response) => {
-    const id = <UUID>req.params.id;
-    const response = await this.jobService.deleteJobById(id);
-    return res.status(StatusCodes.OK).json({
-      message: 'Job deleted successfully',
-      response,
-    });
-  };
+    return sendSuccess(res, job, 'Successfully fetched job details');
+  }
 }
 
 export default JobController;

@@ -1,4 +1,4 @@
-import express from 'express'
+import express from 'express';
 import UserRepository from '../../repositories/user.repository.js';
 import UserService from '../../services/user.services.js';
 import UserController from '../../controllers/user.controller.js';
@@ -13,9 +13,13 @@ const userRepo = new UserRepository();
 const userService = new UserService(userRepo);
 const userController = new UserController(userService);
 
-router.post('/register', validateUserdata(createUserSchema),asyncHandler(userController.createUser));
+router.post(
+  '/register',
+  validateUserdata(createUserSchema),
+  asyncHandler(userController.createUser),
+);
 router.post('/verify-otp', asyncHandler(userController.verifyOTP));
 router.post('/login', asyncHandler(userController.login));
-router.get ('/me', authMiddleware ,asyncHandler(userController.getLoggedInUser));
-router.post('/refresh-token', asyncHandler(userController.getAccessTokens))
+router.get('/me', authMiddleware, asyncHandler(userController.getLoggedInUser));
+router.post('/refresh-token', asyncHandler(userController.getAccessTokens));
 export default router;

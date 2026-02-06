@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
 import { EMAIL, EMAIL_HOST_NAME, EMAIL_PASS } from './server-config.js';
 
 const transporter = nodemailer.createTransport({

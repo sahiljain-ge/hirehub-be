@@ -6,17 +6,13 @@ import { NODE_ENV } from './server-config.js';
 const logDir = 'logs';
 fs.mkdirSync(logDir, { recursive: true });
 
-const devFormat = winston.format.printf(
-  ({ level, message, timestamp, stack, ...meta }) => {
-    const metaStr = Object.keys(meta).length
-      ? ` ${JSON.stringify(meta)}`
-      : '';
+const devFormat = winston.format.printf(({ level, message, timestamp, stack, ...meta }) => {
+  const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
 
-    return stack
-      ? `[${timestamp}] ${level.toUpperCase()}: ${message}\n${stack}${metaStr}`
-      : `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
-  },
-);
+  return stack
+    ? `[${timestamp}] ${level.toUpperCase()}: ${message}\n${stack}${metaStr}`
+    : `[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}`;
+});
 
 const logger = winston.createLogger({
   level: NODE_ENV === 'production' ? 'info' : 'debug',
@@ -29,10 +25,7 @@ const logger = winston.createLogger({
     winston.format.splat(),
     NODE_ENV === 'production'
       ? winston.format.json()
-      : winston.format.combine(
-          winston.format.colorize(),
-          devFormat,
-        ),
+      : winston.format.combine(winston.format.colorize(), devFormat),
   ),
 
   transports: [

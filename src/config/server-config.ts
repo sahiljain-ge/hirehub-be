@@ -12,5 +12,5 @@ export const {
   BCRYPT_SALT,
   EMAIL_HOST_NAME,
   EMAIL,
-  EMAIL_PASS
+  EMAIL_PASS,
 } = process.env;
