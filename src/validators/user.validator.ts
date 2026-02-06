@@ -1,11 +1,9 @@
-import { NextFunction, Request, Response } from "express";
-import z, { ZodError } from "zod";
-import logger from "../config/logger.js";
-import { StatusCodes } from "http-status-codes";
+import { NextFunction, Request, Response } from 'express';
+import z, { ZodError } from 'zod';
+import logger from '../config/logger.js';
+import { StatusCodes } from 'http-status-codes';
 
-
-
-export const validateUserdata = 
+export const validateUserdata =
   (schema: z.ZodObject<any, any>) => (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.body);

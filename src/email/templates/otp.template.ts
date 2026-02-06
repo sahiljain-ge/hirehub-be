@@ -1,6 +1,5 @@
 const otpTemplate = (otp: string) => {
-  return (
-    `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -46,7 +45,6 @@ const otpTemplate = (otp: string) => {
     </tr>
   </table>
 </body>
-</html>`
-  );
-}
+</html>`;
+};
 export default otpTemplate;
