@@ -7,12 +7,17 @@ import testimonialsRoutes from './testimonials.routes.js';
 
 import jobSeekerRoutes from './job-seeker-profile.routes.js';;
 import applicationRoutes from './application.routes.js';
+import jobSeekerRoutes from './job-seeker-profile.routes.js';
+import applicationRoutes from './application.routes.js';
+
 const router = express.Router();
 router.use('/employer', empJobRoutes);
 router.use('/jobs', jobRoutes);
+
 router.use('/auth', userRoutes);
 router.use('/subscribe', subscriptionRoutes);
 router.use('/testimonials', testimonialsRoutes);
+router.use('/applications', applicationRoutes);
 
 router.use('/job-seeker/profile', jobSeekerRoutes);
 router.use('/applications', applicationRoutes);
