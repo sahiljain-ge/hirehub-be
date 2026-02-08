@@ -13,6 +13,7 @@ model User {
   password    String
   role        Role
   otp         String?
+  otp_type    OTPType?
   expires_at  DateTime?
   is_verified Boolean    @default(false)
   created_at  DateTime   @default(now())
@@ -28,7 +29,7 @@ model Company {
   location_url String
   logo_url     String
   employer_id  String @unique
-  employer     User   @relation(fields: [employer_id], references: [id])
+  employer     User   @relation(fields: [employer_id], references: [id], onDelete: Cascade)
   jobs         Job[]
 }
 
@@ -41,7 +42,7 @@ model JobSeeker {
   experience_level ExperienceLevel
   bio              String
   applications     Application[]
-  user             User             @relation(fields: [user_id], references: [id])
+  user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   skills           JobSeekerSkill[]
 }
 
@@ -66,13 +67,13 @@ model Job {
   address_id           Int
   min_qualifications   MIN_QUALIFICATION
   applications         Application[]
-  address              Adresses          @relation(fields: [address_id], references: [id])
+  address              Addresses         @relation(fields: [address_id], references: [id], onDelete: Cascade)
   category             JobCategory       @relation(fields: [category_id], references: [id])
-  company              Company           @relation(fields: [company_id], references: [id])
+  company              Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
   skills               JobSkill[]
 }
 
-model Adresses {
+model Addresses {
   id          Int    @id @default(autoincrement())
   city        String
   state       String
@@ -88,8 +89,8 @@ model Application {
   cover_letter_url String?
   status           ApplicationStatus
   applied_at       DateTime          @default(now())
-  job              Job               @relation(fields: [job_id], references: [id])
-  seeker           JobSeeker         @relation(fields: [seeker_id], references: [id])
+  job              Job               @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  seeker           JobSeeker         @relation(fields: [seeker_id], references: [id], onDelete: Cascade)
 
   @@unique([job_id, seeker_id])
 }
@@ -97,8 +98,8 @@ model Application {
 model JobSeekerSkill {
   seeker_id String
   skill_id  Int
-  seeker    JobSeeker @relation(fields: [seeker_id], references: [id])
-  skill     Skill     @relation(fields: [skill_id], references: [id])
+  seeker    JobSeeker @relation(fields: [seeker_id], references: [id], onDelete: Cascade)
+  skill     Skill     @relation(fields: [skill_id], references: [id], onDelete: Cascade)
 
   @@id([seeker_id, skill_id])
 }
@@ -106,8 +107,8 @@ model JobSeekerSkill {
 model JobSkill {
   job_id   String
   skill_id Int
-  job      Job    @relation(fields: [job_id], references: [id])
-  skill    Skill  @relation(fields: [skill_id], references: [id])
+  job      Job    @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  skill    Skill  @relation(fields: [skill_id], references: [id], onDelete: Cascade)
 
   @@id([job_id, skill_id])
 }
@@ -164,4 +165,9 @@ enum MIN_QUALIFICATION {
   DIPLOMA
   HIGH_SCHOOL
   HIGHER_SECONDARY
+}
+
+enum OTPType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
 }

@@ -18,8 +18,13 @@ router.post(
   validateUserdata(createUserSchema),
   asyncHandler(userController.createUser),
 );
-router.post('/verify-otp', asyncHandler(userController.verifyOTP));
+router.post('/verify-otp', asyncHandler(userController.verifyEmailOTP));
 router.post('/login', asyncHandler(userController.login));
 router.get('/me', authMiddleware, asyncHandler(userController.getLoggedInUser));
 router.post('/refresh-token', asyncHandler(userController.getAccessTokens));
+
+router.post('/forgot-password', asyncHandler(userController.forgotPassword));
+router.post('/forgot-password/verify-otp', asyncHandler(userController.verifyForgotPasswordOTP));
+router.post('/forgot-password/reset', asyncHandler(userController.resetPassword));
+
 export default router;
