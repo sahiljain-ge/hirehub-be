@@ -4,25 +4,20 @@ import { StatusCodes } from 'http-status-codes';
 import { sendError, sendFail, sendSuccess } from '../utils/responseFormatter.js';
 import { signAccessToken, verifyRefreshToken } from '../utils/jwt.js';
 import { JwtPayload } from 'jsonwebtoken';
+import { OTPType } from '../generated/enums.js';
 
 class UserController {
   constructor(private userService: UserService) {}
 
   createUser = async (req: Request, res: Response) => {
-    const user = await this.userService.createUser(req.body);
-    return sendSuccess(
-      res,
-      user,
-      'User created successfully, now verify it with OTP',
-      StatusCodes.CREATED,
-    );
+    await this.userService.createUser(req.body);
+    sendSuccess(res, null, 'User created. Verify email with OTP', StatusCodes.CREATED);
   };
 
-  verifyOTP = async (req: Request, res: Response) => {
-    const { otp, email } = req.body;
-    const isVerified = await this.userService.verifyOTP(otp, email);
-    if (isVerified) sendSuccess(res, isVerified, 'OTP verified successfully', StatusCodes.OK);
-    else sendFail(res, 'OTP Expired', StatusCodes.BAD_REQUEST);
+  verifyEmailOTP = async (req: Request, res: Response) => {
+    const { email, otp } = req.body;
+    await this.userService.verifyOTP(email, otp, OTPType.VERIFY_EMAIL);
+    sendSuccess(res, null, 'Email verified successfully', StatusCodes.OK);
   };
 
   login = async (req: Request, res: Response) => {
@@ -34,33 +29,50 @@ class UserController {
       sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000,
     });
-    sendSuccess(res, { user, accessToken }, 'You have logged in seccessfully', StatusCodes.OK);
+
+    sendSuccess(res, { user, accessToken }, 'Login successful', StatusCodes.OK);
+  };
+
+  forgotPassword = async (req: Request, res: Response) => {
+    await this.userService.sendOTP(req.body.email, OTPType.RESET_PASSWORD);
+    sendSuccess(res, null, 'OTP sent for password reset', StatusCodes.OK);
+  };
+
+  verifyForgotPasswordOTP = async (req: Request, res: Response) => {
+    const { email, otp } = req.body;
+    await this.userService.verifyOTP(email, otp, OTPType.RESET_PASSWORD);
+    sendSuccess(res, null, 'OTP verified', StatusCodes.OK);
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    await this.userService.resetPassword(email, password);
+    sendSuccess(res, null, 'Password reset successful', StatusCodes.OK);
   };
 
   getLoggedInUser = async (req: Request, res: Response) => {
-    if (req.user) {
-      const { id } = req.user;
-      const user = await this.userService.getUserById(id);
-      sendSuccess(res, user, 'Current Logged in user.', StatusCodes.OK);
-    } else sendError(res, 'Log in first', StatusCodes.UNAUTHORIZED);
+    if (!req.user) {
+      return sendError(res, 'Login first', StatusCodes.UNAUTHORIZED);
+    }
+    const user = await this.userService.getUserById(req.user.id);
+    sendSuccess(res, user, 'Current user', StatusCodes.OK);
   };
 
   getAllUsers = async (_req: Request, res: Response) => {
     const users = await this.userService.getAllUsers();
-    sendSuccess(res, users, 'Users retrieved successfully', StatusCodes.OK);
+    sendSuccess(res, users, 'Users retrieved', StatusCodes.OK);
   };
 
   getAccessTokens = async (req: Request, res: Response) => {
     const refreshToken = req.cookies?.jwt;
-
     if (!refreshToken) {
-      sendFail(res, 'Refresh token missing', StatusCodes.BAD_REQUEST);
+      return sendFail(res, 'Refresh token missing', StatusCodes.BAD_REQUEST);
     }
 
     const payload = verifyRefreshToken(refreshToken) as JwtPayload;
-    const accessToken = signAccessToken({ userId: payload.id });
+    const accessToken = signAccessToken({ id: payload.id });
 
-    sendSuccess(res, accessToken, 'new access token', StatusCodes.OK);
+    sendSuccess(res, accessToken, 'New access token', StatusCodes.OK);
   };
 }
 

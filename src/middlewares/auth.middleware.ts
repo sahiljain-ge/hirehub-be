@@ -3,6 +3,7 @@ import AppError from '../utils/AppError.js';
 import { Role } from '../generated/enums.js';
 import { verifyAccessToken } from '../utils/jwt.js';
 import { StatusCodes } from 'http-status-codes';
+import { sendFail } from '../utils/responseFormatter.js';
 
 interface JwtPayload {
   id: string;
@@ -33,5 +34,22 @@ const authMiddleware = (req: Request, _res: Response, next: NextFunction) => {
     throw new AppError('Invalid or expired token', StatusCodes.UNAUTHORIZED);
   }
 };
+
+export const requireRole = (allowedRole: Role) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return sendFail(res, 'Authentication Required.', StatusCodes.UNAUTHORIZED);
+    }
+
+    if (!allowedRole.includes(req.user.role)) {
+      return sendFail(res, 'Access Denied. Insufficient Permissions.', StatusCodes.FORBIDDEN);
+    }
+
+    next();
+  };
+};
+
+export const requireEmployer = requireRole(Role.EMPLOYER);
+export const requireJobSeeker = requireRole(Role.JOB_SEEKER);
 
 export default authMiddleware;
