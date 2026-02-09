@@ -9,6 +9,7 @@ import skillsRoutes from './skills.route.js';
 import jobSeekerRoutes from './job-seeker-profile.routes.js';
 import applicationRoutes from './application.routes.js';
 import addressRoutes from './address.routes.js';
+import JobSeekerRoutes from "./jobSeekerSkills.routes.js"
 
 const router = express.Router();
 router.use('/employer', empJobRoutes);
@@ -22,5 +23,8 @@ router.use('/applications', applicationRoutes);
 router.use('/job-seeker/profile', jobSeekerRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/addresses', addressRoutes);
+
+
+router.use("/job-seeker/skills", JobSeekerRoutes)
 
 export default router;
