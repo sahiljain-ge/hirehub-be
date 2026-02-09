@@ -13,4 +13,5 @@ router.use('/auth', userRoutes);
 router.use('/subscribe', subscriptionRoutes);
 router.use('/testimonials', testimonialsRoutes);
 
+router.use('/job-seeker/profile', jobSeekerRouter);
 export default router;
