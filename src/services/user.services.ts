@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import sendEmail from '../email/email.sender.js';
+import sendOtp from '../email/email.sender.js';
 import otpTemplate from '../email/templates/otp.template.js';
 import UserRepository from '../repositories/user.repository.js';
 import AppError from '../utils/AppError.js';
@@ -8,9 +8,10 @@ import { CreateUser } from '../schemas/user.schema.js';
 import { signAccessToken, signRefreshToken } from '../utils/jwt.js';
 import { generateOTP, verifyOTP } from '../utils/otp.js';
 import { OTPType } from '../generated/enums.js';
+import { REG_OTP_TEMPLATE_ID, RESET_OTP_TEMPLATE_ID } from '../config/server-config.js';
 
 class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(private readonly userRepository: UserRepository) { }
 
   async createUser(data: CreateUser) {
     const existedUser = await this.userRepository.findByEmail(data.email);
@@ -21,7 +22,7 @@ class UserService {
     const hashedPassword = await bcrypt.hash(data.password, 12);
     const { otp, hashedOTP, expiresAt } = await generateOTP();
 
-    await sendEmail(data.email, 'Verify your email', otpTemplate(otp));
+    await sendOtp(data.email, otp, REG_OTP_TEMPLATE_ID!);
 
     await this.userRepository.create({
       ...data,
@@ -40,11 +41,7 @@ class UserService {
 
     const { otp, hashedOTP, expiresAt } = await generateOTP();
 
-    await sendEmail(
-      email,
-      type === OTPType.VERIFY_EMAIL ? 'Verify your email' : 'Reset your password',
-      otpTemplate(otp),
-    );
+    await sendOtp(user.email, otp, RESET_OTP_TEMPLATE_ID!);
 
     await this.userRepository.updateByEmail(email, {
       otp: hashedOTP,
