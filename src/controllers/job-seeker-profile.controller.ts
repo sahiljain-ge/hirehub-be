@@ -1,9 +1,7 @@
-import { Request, Response } from "express";
-import {
-    getJobSeekerProfile as getJobSeekerProfileService,
-    updateJobSeekerProfile as updateJobSeekerProfileService,
-    uploadJobSeekerResume as uploadJobSeekerResumeService,
-} from "../services/job-seeker-profile.service.js";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { sendError, sendFail, sendSuccess } from '../utils/responseFormatter.js';
+import JobSeekerProfileService from '../services/job-seeker-profile.services.js';
 
 type RequestWithFile = Request & { file?: { path?: string } };
 
