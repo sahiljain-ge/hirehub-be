@@ -1,13 +1,20 @@
-import db from "../config/prisma.js";
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { sendSuccess } from '../utils/responseFormatter.js';
+import JobCategoriesService from '../services/job-categories.services.js';
 
-const getJobCategories = async (req: Request, res: Response) => {
-    const jobCategories = await db.jobCategory.findMany({});
-    return res.status(200).json({
-        data: jobCategories
-    })
+class JobCategoriesController {
+    constructor(private readonly jobCategoriesService: JobCategoriesService) {}
+
+    getJobCategories = async (req: Request, res: Response) => {
+        const jobCategories = await this.jobCategoriesService.getAllJobCategories();
+        return sendSuccess(
+            res,
+            jobCategories,
+            'Job categories retrieved successfully',
+            StatusCodes.OK,
+        );
+    };
 }
 
-export {
-    getJobCategories
-}
+export default JobCategoriesController;
