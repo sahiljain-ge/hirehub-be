@@ -11,25 +11,30 @@ import {
 import JobSeekerProfileRepository from '../../repositories/job-seeker-profile.repository.js';
 import JobSeekerProfileService from '../../services/job-seeker-profile.services.js';
 
-const jobSeekerRouter = Router();
+const jobSeekerRoutes = Router();
+jobSeekerRoutes.use(authMiddleware);
+jobSeekerRoutes.use(requireJobSeeker);
 
-jobSeekerRouter.use(dummyAuth);
+const jobSeekerProfileRepository = new JobSeekerProfileRepository();
+const jobSeekerProfileService = new JobSeekerProfileService(jobSeekerProfileRepository);
+const jobSeekerProfileController = new JobSeekerProfileController(jobSeekerProfileService);
+const jobSeekerProfileValidator = new JobSeekerProfileValidator();
 
-jobSeekerRouter.post(
+jobSeekerRoutes.post(
   '/',
   jobSeekerProfileValidator.validate(createJobSeekerProfileSchema),
   asyncHandler(jobSeekerProfileController.createJobSeekerProfile),
 );
-jobSeekerRouter.get('/', asyncHandler(jobSeekerProfileController.getJobSeekerProfile));
-jobSeekerRouter.put(
+jobSeekerRoutes.get('/', asyncHandler(jobSeekerProfileController.getJobSeekerProfile));
+jobSeekerRoutes.put(
   '/',
   jobSeekerProfileValidator.validate(updateJobSeekerProfileSchema),
   asyncHandler(jobSeekerProfileController.updateJobSeekerProfile),
 );
-jobSeekerRouter.post(
+jobSeekerRoutes.post(
   '/resume',
   upload.single('resume'),
   asyncHandler(jobSeekerProfileController.uploadJobSeekerResume),
 );
 
-export default jobSeekerRouter;
+export default jobSeekerRoutes;

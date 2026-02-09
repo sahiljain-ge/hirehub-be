@@ -1,31 +1,27 @@
-import {
-  findJobSeekerProfileByUserId,
-  updateJobSeekerProfileByUserId,
-  updateJobSeekerResumeUrl,
-} from "../repositories/job-seeker-profile.repository.js";
-import { ExperienceLevel } from "../generated/enums.js";
-const getJobSeekerProfile = async (userId: string) => {
-  return findJobSeekerProfileByUserId(userId);
-};
+import JobSeekerProfileRepository from '../repositories/job-seeker-profile.repository.js';
+import type {
+  CreateJobSeekerProfileBody,
+  UpdateJobSeekerProfileBody,
+} from '../schemas/job-seeker.schema.js';
 
-const updateJobSeekerProfile = async (
-  userId: string,
-  data: {
-    first_name?: string;
-    last_name?: string;
-    bio?: string;
-    experience_level?: ExperienceLevel;
+class JobSeekerProfileService {
+  constructor(private readonly jobSeekerProfileRepository: JobSeekerProfileRepository) {}
+
+  async getJobSeekerProfile(userId: string) {
+    return this.jobSeekerProfileRepository.findByUserId(userId);
   }
-) => {
-  return updateJobSeekerProfileByUserId(userId, data);
-};
 
-const uploadJobSeekerResume = async (userId: string, resumeUrl: string) => {
-  return updateJobSeekerResumeUrl(userId, resumeUrl);
-};
+  async createJobSeekerProfile(userId: string, data: CreateJobSeekerProfileBody) {
+    return this.jobSeekerProfileRepository.createByUserId(userId, data);
+  }
 
-export {
-  getJobSeekerProfile,
-  updateJobSeekerProfile,
-  uploadJobSeekerResume,
-};
+  async updateJobSeekerProfile(userId: string, data: UpdateJobSeekerProfileBody) {
+    return this.jobSeekerProfileRepository.updateByUserId(userId, data);
+  }
+
+  async uploadJobSeekerResume(userId: string, resumeUrl: string) {
+    return this.jobSeekerProfileRepository.updateResumeUrl(userId, resumeUrl);
+  }
+}
+
+export default JobSeekerProfileService;
