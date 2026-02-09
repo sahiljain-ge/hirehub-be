@@ -12,11 +12,10 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async () =>
     ({
-      folder: "pdfs",
-      resource_type: "raw",
-      allowed_formats: ["pdf"],
-    } as unknown as Record<string, unknown>),
+      folder: 'pdfs',
+      resource_type: 'raw',
+      allowed_formats: ['pdf'],
+    }) as unknown as Record<string, unknown>,
 });
 
 export const upload = multer({ storage: storage });
-

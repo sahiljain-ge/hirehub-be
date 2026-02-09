@@ -5,54 +5,83 @@ import JobSeekerProfileService from '../services/job-seeker-profile.services.js'
 
 type RequestWithFile = Request & { file?: { path?: string } };
 
-const getJobSeekerProfile = async (req: Request, res: Response) => {
-    const userId = req.user!.id;
+class JobSeekerProfileController {
+  constructor(private readonly jobSeekerProfileService: JobSeekerProfileService) {
+    this.createJobSeekerProfile = this.createJobSeekerProfile.bind(this);
+    this.getJobSeekerProfile = this.getJobSeekerProfile.bind(this);
+    this.updateJobSeekerProfile = this.updateJobSeekerProfile.bind(this);
+    this.uploadJobSeekerResume = this.uploadJobSeekerResume.bind(this);
+  }
 
-    const profile = await getJobSeekerProfileService(userId);
-
-    if (!profile) {
-        return res.status(404).json({ message: "Job Seeker Profile not found" });
+  async createJobSeekerProfile(req: Request, res: Response) {
+    const existingProfile = await this.jobSeekerProfileService.getJobSeekerProfile(req.user!.id);
+    if (existingProfile) {
+      return sendError(res, 'Job Seeker Profile already exists', StatusCodes.CONFLICT);
     }
 
-    return res.json(profile);
-};
-
-
-const updateJobSeekerProfile = async (req: Request, res: Response) => {
-    const jobSeekerProfile = await getJobSeekerProfileService(req.user!.id);
-    if (!jobSeekerProfile) {
-        return res.status(404).json({ message: "Job Seeker Profile not found" });
-    };
     const { first_name, last_name, bio, experience_level } = req.body;
-    const updatedProfile = await updateJobSeekerProfileService(req.user!.id, {
-        first_name,
-        last_name,
-        bio,
-        experience_level,
+    const createdProfile = await this.jobSeekerProfileService.createJobSeekerProfile(req.user!.id, {
+      first_name,
+      last_name,
+      bio,
+      experience_level,
     });
 
-    return res.status(200).json(updatedProfile);
-};
+    return sendSuccess(res, createdProfile, 'Job seeker profile created', StatusCodes.CREATED);
+  }
 
-const uploadJobSeekerResume = async (req: RequestWithFile, res: Response) => {
-    const jobSeekerProfile = await getJobSeekerProfileService(req.user!.id);
+  async getJobSeekerProfile(req: Request, res: Response) {
+    const userId = req.user!.id;
+
+    const profile = await this.jobSeekerProfileService.getJobSeekerProfile(userId);
+
+    if (!profile) {
+      return sendError(res, 'Job Seeker Profile not found', StatusCodes.NOT_FOUND);
+    }
+
+    return sendSuccess(res, profile, 'Job seeker profile retrieved', StatusCodes.OK);
+  }
+
+  async updateJobSeekerProfile(req: Request, res: Response) {
+    const jobSeekerProfile = await this.jobSeekerProfileService.getJobSeekerProfile(req.user!.id);
+    if (!jobSeekerProfile) {
+      return sendError(res, 'Job Seeker Profile not found', StatusCodes.NOT_FOUND);
+    }
+    const { first_name, last_name, bio, experience_level } = req.body;
+    const updatedProfile = await this.jobSeekerProfileService.updateJobSeekerProfile(req.user!.id, {
+      first_name,
+      last_name,
+      bio,
+      experience_level,
+    });
+
+    return sendSuccess(res, updatedProfile, 'Job seeker profile updated', StatusCodes.OK);
+  }
+
+  async uploadJobSeekerResume(req: RequestWithFile, res: Response) {
+    const jobSeekerProfile = await this.jobSeekerProfileService.getJobSeekerProfile(req.user!.id);
 
     if (!jobSeekerProfile) {
-        return res.status(404).json({ message: "Job Seeker Profile not found" });
+      return sendError(res, 'Job Seeker Profile not found', StatusCodes.NOT_FOUND);
     }
 
     const fileUrl = (req.file as { path?: string } | undefined)?.path;
     if (!fileUrl) {
-        return res.status(400).json({ message: "Resume file is required" });
+      return sendFail(res, 'Resume file is required', StatusCodes.BAD_REQUEST);
     }
 
-    const updatedProfile = await uploadJobSeekerResumeService(req.user!.id, fileUrl);
+    const updatedProfile = await this.jobSeekerProfileService.uploadJobSeekerResume(
+      req.user!.id,
+      fileUrl,
+    );
 
-    return res.status(200).json(updatedProfile?.resume_url);
+    return sendSuccess(
+      res,
+      { resume_url: updatedProfile?.resume_url },
+      'Resume uploaded successfully',
+      StatusCodes.OK,
+    );
+  }
 }
 
-export {
-    getJobSeekerProfile,
-    updateJobSeekerProfile,
-    uploadJobSeekerResume,
-}
+export default JobSeekerProfileController;
