@@ -7,7 +7,6 @@ import YAML from 'yamljs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middlewares/errorHandler.js';
-import morgan from 'morgan';
 import apiRoutes from './routes/index.js';
 import { CLIENT_URL } from './config/server-config.js';
 
@@ -16,7 +15,6 @@ import { CLIENT_URL } from './config/server-config.js';
 const app: Application = express();
 
 app.use(express.json());
-app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(

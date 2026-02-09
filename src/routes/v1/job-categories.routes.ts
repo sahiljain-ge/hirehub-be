@@ -4,11 +4,11 @@ import JobCategoriesController from '../../controllers/job-categories.controller
 import JobCategoriesService from '../../services/job-categories.services.js';
 import JobCategoriesRepository from '../../repositories/job-categories.repository.js';
 
-const jobCategoriesRouter = Router();
+const jobCategoriesRoutes = Router();
 const jobCategoriesRepository = new JobCategoriesRepository();
 const jobCategoriesService = new JobCategoriesService(jobCategoriesRepository);
 const jobCategoriesController = new JobCategoriesController(jobCategoriesService);
 
-jobCategoriesRouter.get('/', asyncHandler(jobCategoriesController.getJobCategories));
+jobCategoriesRoutes.get('/', asyncHandler(jobCategoriesController.getJobCategories));
 
-export default jobCategoriesRouter;
+export default jobCategoriesRoutes;
