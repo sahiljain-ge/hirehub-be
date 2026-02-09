@@ -66,7 +66,7 @@ class UserService {
     try {
       await verifyOTP(otp, user.otp, user.expires_at);
     } catch (err: unknown) {
-      if (err.message === 'OTP_EXPIRED') {
+      if (err instanceof Error && err.message === 'OTP_EXPIRED') {
         throw new AppError('OTP expired', StatusCodes.BAD_REQUEST);
       }
       throw new AppError('Invalid OTP', StatusCodes.BAD_REQUEST);
