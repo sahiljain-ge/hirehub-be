@@ -16,7 +16,7 @@ const sendOtp = async (receiverEmail: string, otp: string, templateId: string) =
       { email: receiverEmail, otp },
       {
         privateKey: EMAILJS_PRIVATE_KEY!,
-        publicKey: EMAILJS_PUBLIC_KEY!
+        publicKey: EMAILJS_PUBLIC_KEY!,
       },
     );
     logger.info(`email sent, status: ${res.status}`);

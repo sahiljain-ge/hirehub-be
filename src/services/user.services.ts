@@ -11,7 +11,7 @@ import { OTPType } from '../generated/enums.js';
 import { REG_OTP_TEMPLATE_ID, RESET_OTP_TEMPLATE_ID } from '../config/server-config.js';
 
 class UserService {
-  constructor(private readonly userRepository: UserRepository) { }
+  constructor(private readonly userRepository: UserRepository) {}
 
   async createUser(data: CreateUser) {
     const existedUser = await this.userRepository.findByEmail(data.email);
