@@ -12,8 +12,6 @@ import apiRoutes from './routes/index.js';
 import { CLIENT_URL } from './config/server-config.js';
 
 //  -----  Routes Import  ----- 
-import skillRouter from './routes/skills.route.js';
-import jobCategoriesRouter from './routes/job-categories.routes.js';
 
 const app: Application = express();
 
@@ -36,8 +34,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get('/', (req: Request, res: Response) => res.send('Working'));
 //  -----  Routes Use  ----- 
-app.use('/api/v1/skills', skillRouter);
-app.use('/api/v1/job-categories', jobCategoriesRouter);
 app.use('/api', apiRoutes);
 app.use(errorHandler);
 

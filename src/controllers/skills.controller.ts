@@ -1,13 +1,15 @@
-import db from "../config/prisma.js";
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { sendSuccess } from '../utils/responseFormatter.js';
+import SkillsService from '../services/skills.services.js';
 
-const getSkills = async (req: Request, res: Response) => {
-    const skills = await db.skill.findMany({});
-    return res.status(200).json({
-        data: skills
-    })
+class SkillsController {
+    constructor(private readonly skillsService: SkillsService) {}
+
+    getSkills = async (req: Request, res: Response) => {
+        const skills = await this.skillsService.getAllSkills();
+        return sendSuccess(res, skills, 'Skills retrieved successfully', StatusCodes.OK);
+    };
 }
 
-export {
-    getSkills
-}
+export default SkillsController;
