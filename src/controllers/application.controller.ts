@@ -5,11 +5,9 @@ import type { UpdateApplicationStatusBody } from '../schemas/application.schema.
 import { sendSuccess } from '../utils/responseFormatter.js';
 
 class ApplicationController {
-  constructor(private readonly applicationService: ApplicationService) {
-    this.updateStatus = this.updateStatus.bind(this);
-  }
+  constructor(private readonly applicationService: ApplicationService) {}
 
-  async updateStatus(req: Request, res: Response) {
+  updateStatus = async (req: Request, res: Response)=> {
     const applicationId = req.params.applicationId as UUID;
     const employerId = req.user!.id as UUID;
     const body = req.body as UpdateApplicationStatusBody;
