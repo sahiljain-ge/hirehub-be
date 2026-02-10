@@ -18,7 +18,7 @@ class JobController {
   async createJob(req: Request, res: Response) {
     const jobData: CreateJobBody = req.body;
     const response = await this.jobService.createJob(jobData);
-    sendSuccess(res, response, 'Successfully created a job');
+    sendSuccess(res, response, 'Successfully created a job', StatusCodes.CREATED);
   }
 
   async getAllJobsOfEmp(req: Request, res: Response) {
