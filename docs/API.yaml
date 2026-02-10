@@ -416,6 +416,39 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
   /job-seeker/profile:
+    post:
+      tags: [Job Seeker Profile]
+      summary: Create authenticated job seeker's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [first_name, last_name]
+              properties:
+                first_name: { type: string }
+                last_name: { type: string }
+                bio: { type: string }
+                experience_level:
+                  type: string
+                  enum: [NO_EXP, FRESHER, INTERMEDIATE, EXPERT]
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobSeekerProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
     get:
       tags: [Job Seeker Profile]
       summary: Retrieve authenticated job seeker's profile

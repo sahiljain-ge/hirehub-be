@@ -34,6 +34,7 @@ jobSeekerRoutes.put(
 jobSeekerRoutes.post(
   '/resume',
   upload.single('resume'),
+  jobSeekerProfileValidator.requireResumeFile(),
   asyncHandler(jobSeekerProfileController.uploadJobSeekerResume),
 );
 
