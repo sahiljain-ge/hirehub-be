@@ -6,8 +6,6 @@ const router = express.Router();
 
 router.use('/employer', empJobRoutes);
 router.use('/jobs', jobRoutes);
-
-router.use('/employer/jobs', jobRoutes);
 router.use('/auth', userRoutes);
 
 export default router;

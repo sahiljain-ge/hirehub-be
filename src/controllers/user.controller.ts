@@ -33,6 +33,17 @@ class UserController {
     sendSuccess(res, { user, accessToken }, 'Login successful', StatusCodes.OK);
   };
 
+  logout = async (req: Request, res: Response) => {
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    });
+
+    sendSuccess(res, true, 'Logout Successfull', StatusCodes.OK);
+  };
+
   forgotPassword = async (req: Request, res: Response) => {
     await this.userService.sendOTP(req.body.email, OTPType.RESET_PASSWORD);
     sendSuccess(res, null, 'OTP sent for password reset', StatusCodes.OK);

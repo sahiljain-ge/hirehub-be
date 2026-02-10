@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import sendOtp from '../email/email.sender.js';
-import otpTemplate from '../email/templates/otp.template.js';
 import UserRepository from '../repositories/user.repository.js';
 import AppError from '../utils/AppError.js';
 import { StatusCodes } from 'http-status-codes';
@@ -81,7 +80,7 @@ class UserService {
 
   async login(email: string, password: string) {
     const user = await this.userRepository.findByEmail(email);
-    if (!user) throw new AppError('Invalid credentials', StatusCodes.UNAUTHORIZED);
+    if (!user) throw new AppError('User not found. Register first to login', StatusCodes.NOT_FOUND);
 
     if (!user.is_verified) {
       throw new AppError('Verify your email first', StatusCodes.BAD_REQUEST);
