@@ -2,82 +2,94 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { UUID } from "node:crypto";
 import JobSeekerService from "../services/jobSeeker.service.js";
-
+import { sendSuccess, sendFail } from "../utils/responseFormatter.js";
 
 class JobSeekerController {
     constructor(private readonly jobSeekerService: JobSeekerService) { }
 
     getSkills = async (req: Request, res: Response) => {
         if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
         }
 
-        const seekerId = req.user?.id as UUID;
-
+        const seekerId = req.user.id as UUID;
         const skills = await this.jobSeekerService.getSkills(seekerId);
 
-        res.status(StatusCodes.OK).json({
-            data: skills
-        });
+        return sendSuccess(res, skills);
     };
 
     addSkills = async (req: Request, res: Response) => {
         if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
         }
 
-        const seekerId = req.user!.id as UUID;
+        const seekerId = req.user.id as UUID;
         const skillIds: number[] = req.body.skillIds;
 
         if (!Array.isArray(skillIds) || skillIds.length === 0) {
-            return res.status(400).json({ message: "skillIds must be a non-empty array" });
+            return sendFail(
+                res,
+                "skillIds must be a non-empty array",
+                StatusCodes.BAD_REQUEST
+            );
         }
 
         await this.jobSeekerService.addSkills(seekerId, skillIds);
 
-        return res.status(StatusCodes.OK).json({ message: "Skills added successfully" });
+        return sendSuccess(
+            res,
+            null,
+            "Skills added successfully",
+            StatusCodes.OK
+        );
     };
-
-
 
     deleteSkills = async (req: Request, res: Response) => {
         if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
         }
 
-        const seekerId = req.user!.id as UUID;
+        const seekerId = req.user.id as UUID;
         const skillIds: number[] = req.body.skillIds;
 
         if (!Array.isArray(skillIds) || skillIds.length === 0) {
-            return res.status(400).json({ message: "skillIds must be a non-empty array" });
+            return sendFail(
+                res,
+                "skillIds must be a non-empty array",
+                StatusCodes.BAD_REQUEST
+            );
         }
 
         await this.jobSeekerService.deleteSkills(seekerId, skillIds);
 
-        return res.status(StatusCodes.OK).json({ message: "Skills deleted successfully" });
+        return sendSuccess(
+            res,
+            null,
+            "Skills deleted successfully",
+            StatusCodes.OK
+        );
     };
-
-
 
     deleteSingleSkill = async (req: Request, res: Response) => {
         if (!req.user) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
         }
 
-        const seekerId = req.user!.id as UUID;   //  the req.user will always be there due to middleware 
-        const { skillId } = req.params;  // skillId is already a NUMBER due to  validation by zod
+        const seekerId = req.user.id as UUID;
+        const { skillId } = req.params;
 
-        const parsedSkillId = Number(skillId);         // convert the id to number
-        if (Number.isNaN(skillId)) {
-            return res.status(400).json({ message: "Invalid skillId" });
+        const parsedSkillId = Number(skillId);
+        if (Number.isNaN(parsedSkillId)) {
+            return sendFail(res, "Invalid skillId", StatusCodes.BAD_REQUEST);
         }
 
-        await this.jobSeekerService.deleteSingleSkill(seekerId, parsedSkillId);
+        await this.jobSeekerService.deleteSingleSkill(
+            seekerId,
+            parsedSkillId
+        );
 
-        return res.status(200).json({ message: "Skill deleted" });
+        return sendSuccess(res, null, "Skill deleted", StatusCodes.OK);
     };
-
-
 }
 
 export default JobSeekerController;
