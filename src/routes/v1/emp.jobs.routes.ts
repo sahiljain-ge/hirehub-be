@@ -3,12 +3,14 @@ import { jobController } from './jobs.route.js';
 import asyncHandler from '../../middlewares/asyncHandler.js';
 import authMiddleware from '../../middlewares/auth.middleware.js';
 import { requireEmployer } from '../../middlewares/auth.middleware.js';
-import { validateJobData } from '../../validators/job.validator.js';
-import { createJobSchema } from '../../schemas/job.schema.js';
+import { validateJobData } from '../../validators/jobs.validator.js';
+import { createJobSchema } from '../../schemas/jobs.schema.js';
 
 const router = express.Router();
-router.use(requireEmployer);
+
 router.use(authMiddleware);
+router.use(requireEmployer);
+
 router.post('/jobs', validateJobData(createJobSchema), asyncHandler(jobController.createJob));
 router.get('/jobs', asyncHandler(jobController.getAllJobsOfEmp));
 router.patch('/jobs/:id/close', asyncHandler(jobController.updateJobStatus));
