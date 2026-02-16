@@ -6,7 +6,7 @@ import {
   CreateJobSeekerProfileBody,
   UpdateJobSeekerProfileBody,
 } from '../schemas/job-seeker.schema.js';
-import { JobSeekerProfileMessages } from '../constants/response.messages.js';
+import { FILE_UPLOAD_MESSAGES, JobSeekerProfileMessages } from '../constants/response.messages.js';
 
 type RequestWithFile = Request & { file?: Express.Multer.File };
 
@@ -62,7 +62,7 @@ class JobSeekerProfileController {
     return sendSuccess(
       res,
       { resume_url: updatedProfile?.resume_url },
-      JobSeekerProfileMessages.RESUME_UPLOAD_SUCCESS,
+      FILE_UPLOAD_MESSAGES.RESUME_UPLOAD_SUCCESS,
       StatusCodes.OK,
     );
   }
