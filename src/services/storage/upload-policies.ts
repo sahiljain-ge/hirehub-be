@@ -1,4 +1,4 @@
-export type ResourceType = 'auto' | 'image' | 'raw' | 'video';
+export type ResourceType = 'auto' | 'image' | 'video';
 
 export interface CategoryPolicy {
   folder: string;
@@ -11,7 +11,7 @@ export interface CategoryPolicy {
 export const DEFAULT_POLICIES = {
   resume: {
     folder: 'resumes',
-    resourceType: 'raw',
+    resourceType: 'auto',
     allowedFormats: ['pdf'],
     allowedMimeTypes: ['application/pdf'],
     maxBytes: 5 * 1024 * 1024,
@@ -25,7 +25,7 @@ export const DEFAULT_POLICIES = {
   },
   coverLetter: {
     folder: 'cover_letters',
-    resourceType: 'raw',
+    resourceType: 'auto',
     allowedFormats: ['pdf'],
     allowedMimeTypes: ['application/pdf'],
     maxBytes: 5 * 1024 * 1024,
