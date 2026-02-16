@@ -2,9 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
 import logger from '../config/logger.js';
 import { StatusCodes } from 'http-status-codes';
-import { sendFail } from '../utils/responseFormatter.js';
-
-type RequestWithFile = Request & { file?: { path?: string } };
 
 class JobSeekerProfileValidator {
   validate(schema: z.ZodObject<any, any>) {
@@ -27,17 +24,6 @@ class JobSeekerProfileValidator {
         }
         next(error);
       }
-    };
-  }
-
-  requireResumeFile() {
-    return (req: RequestWithFile, res: Response, next: NextFunction) => {
-      const fileUrl = req.file?.path;
-      if (!fileUrl) {
-        return sendFail(res, 'Resume file is required', StatusCodes.BAD_REQUEST);
-      }
-
-      return next();
     };
   }
 }

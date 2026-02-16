@@ -5,14 +5,19 @@ import type {
   UpdateJobSeekerProfileBody,
 } from '../schemas/job-seeker.schema.js';
 import AppError from '../utils/AppError.js';
+import type { FileUploadService } from './storage/file-upload.services.js';
+import { FILE_UPLOAD_MESSAGES, JobSeekerProfileMessages } from '../constants/response.messages.js';
 
 class JobSeekerProfileService {
-  constructor(private readonly jobSeekerProfileRepository: JobSeekerProfileRepository) {}
+  constructor(
+    private readonly jobSeekerProfileRepository: JobSeekerProfileRepository,
+    private readonly storageService: FileUploadService,
+  ) {}
 
   async getJobSeekerProfile(userId: string) {
     const profile = await this.jobSeekerProfileRepository.findByUserId(userId);
     if (!profile) {
-      throw new AppError('Job Seeker Profile not found', StatusCodes.NOT_FOUND);
+      throw new AppError(JobSeekerProfileMessages.GET_FAILURE, StatusCodes.NOT_FOUND);
     }
 
     return profile;
@@ -21,7 +26,7 @@ class JobSeekerProfileService {
   async createJobSeekerProfile(userId: string, data: CreateJobSeekerProfileBody) {
     const existingProfile = await this.jobSeekerProfileRepository.findByUserId(userId);
     if (existingProfile) {
-      throw new AppError('Job Seeker Profile already exists', StatusCodes.CONFLICT);
+      throw new AppError(JobSeekerProfileMessages.CREATE_FAILURE, StatusCodes.CONFLICT);
     }
 
     return this.jobSeekerProfileRepository.createByUserId(userId, data);
@@ -30,19 +35,32 @@ class JobSeekerProfileService {
   async updateJobSeekerProfile(userId: string, data: UpdateJobSeekerProfileBody) {
     const existingProfile = await this.jobSeekerProfileRepository.findByUserId(userId);
     if (!existingProfile) {
-      throw new AppError('Job Seeker Profile not found', StatusCodes.NOT_FOUND);
+      throw new AppError(JobSeekerProfileMessages.GET_FAILURE, StatusCodes.NOT_FOUND);
     }
 
     return this.jobSeekerProfileRepository.updateByUserId(userId, data);
   }
 
-  async uploadJobSeekerResume(userId: string, resumeUrl: string) {
-    const existingProfile = await this.jobSeekerProfileRepository.findByUserId(userId);
-    if (!existingProfile) {
-      throw new AppError('Job Seeker Profile not found', StatusCodes.NOT_FOUND);
+  async uploadJobSeekerResume(userId: string, file: Express.Multer.File | undefined) {
+    if (!file) {
+      throw new AppError(FILE_UPLOAD_MESSAGES.NO_FILE_UPLOADED, StatusCodes.BAD_REQUEST);
     }
 
-    return this.jobSeekerProfileRepository.updateResumeUrl(userId, resumeUrl);
+    const existingProfile = await this.jobSeekerProfileRepository.findByUserId(userId);
+    if (!existingProfile) {
+      throw new AppError(JobSeekerProfileMessages.GET_FAILURE, StatusCodes.NOT_FOUND);
+    }
+
+    const uploadResult = await this.storageService.upload('resume', file, {
+      userId,
+    });
+
+    const updatedProfile = await this.jobSeekerProfileRepository.updateResumeAsset(
+      userId,
+      uploadResult.url,
+    );
+
+    return updatedProfile;
   }
 }
 
