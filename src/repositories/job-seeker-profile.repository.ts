@@ -36,10 +36,12 @@ class JobSeekerProfileRepository {
     });
   }
 
-  async updateResumeUrl(userId: string, resumeUrl: string) {
+  async updateResumeAsset(userId: string, resumeUrl: string) {
     return db.jobSeeker.update({
       where: { user_id: userId },
-      data: { resume_url: resumeUrl },
+      data: {
+        resume_url: resumeUrl,
+      },
     });
   }
 }

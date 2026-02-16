@@ -6,8 +6,9 @@ import {
   CreateJobSeekerProfileBody,
   UpdateJobSeekerProfileBody,
 } from '../schemas/job-seeker.schema.js';
+import { JobSeekerProfileMessages } from '../constants/response.messages.js';
 
-type RequestWithFile = Request & { file?: { path?: string } };
+type RequestWithFile = Request & { file?: Express.Multer.File };
 
 class JobSeekerProfileController {
   constructor(private readonly jobSeekerProfileService: JobSeekerProfileService) {
@@ -23,14 +24,19 @@ class JobSeekerProfileController {
       req.user!.id,
       jobSeekerData,
     );
-    return sendSuccess(res, createdProfile, 'Job seeker profile created', StatusCodes.CREATED);
+    return sendSuccess(
+      res,
+      createdProfile,
+      JobSeekerProfileMessages.CREATE_SUCCESS,
+      StatusCodes.CREATED,
+    );
   }
 
   async getJobSeekerProfile(req: Request, res: Response) {
     const userId = req.user!.id;
     const profile = await this.jobSeekerProfileService.getJobSeekerProfile(userId);
 
-    return sendSuccess(res, profile, 'Job seeker profile retrieved', StatusCodes.OK);
+    return sendSuccess(res, profile, JobSeekerProfileMessages.GET_SUCCESS, StatusCodes.OK);
   }
 
   async updateJobSeekerProfile(req: Request, res: Response) {
@@ -39,20 +45,24 @@ class JobSeekerProfileController {
       req.user!.id,
       updateData,
     );
-    return sendSuccess(res, updatedProfile, 'Job seeker profile updated', StatusCodes.OK);
+    return sendSuccess(
+      res,
+      updatedProfile,
+      JobSeekerProfileMessages.UPDATE_SUCCESS,
+      StatusCodes.OK,
+    );
   }
 
   async uploadJobSeekerResume(req: RequestWithFile, res: Response) {
-    const fileUrl = (req.file as { path?: string } | undefined)?.path;
     const updatedProfile = await this.jobSeekerProfileService.uploadJobSeekerResume(
       req.user!.id,
-      fileUrl!,
+      req.file,
     );
 
     return sendSuccess(
       res,
       { resume_url: updatedProfile?.resume_url },
-      'Resume uploaded successfully',
+      JobSeekerProfileMessages.RESUME_UPLOAD_SUCCESS,
       StatusCodes.OK,
     );
   }
