@@ -30,10 +30,10 @@ class TestimonialsController {
       id: testimonial.id,
       message: testimonial.message,
       rating: testimonial.rating,
-      firstName: testimonial.User.jobSeeker?.first_name,
-      lastName: testimonial.User.jobSeeker?.last_name,
-      email: testimonial.User.email,
-      companyName: testimonial.User.company?.name,
+      firstName: testimonial.user.jobSeeker?.first_name,
+      lastName: testimonial.user.jobSeeker?.last_name,
+      email: testimonial.user.email,
+      companyName: testimonial.user.company?.name,
     }));
     return sendSuccess(res, testimonials, 'Successfully feteched all testimonials', StatusCodes.OK);
   }

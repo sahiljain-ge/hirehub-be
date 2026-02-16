@@ -28,7 +28,7 @@ class TestimonialsRepository {
     try {
       return await db.testimonial.findMany({
         include: {
-          User: {
+          user: {
             include: {
               jobSeeker: true,
               company: true,
