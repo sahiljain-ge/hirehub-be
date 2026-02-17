@@ -32,7 +32,6 @@ class TestimonialsController {
       rating: testimonial.rating,
       firstName: testimonial.user.jobSeeker?.first_name,
       lastName: testimonial.user.jobSeeker?.last_name,
-      email: testimonial.user.email,
       companyName: testimonial.user.company?.name,
     }));
     return sendSuccess(res, testimonials, 'Successfully feteched all testimonials', StatusCodes.OK);
