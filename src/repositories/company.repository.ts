@@ -1,4 +1,3 @@
-
 import { StatusCodes } from 'http-status-codes';
 import logger from '../config/logger.js';
 import db from '../config/prisma.js';
@@ -25,8 +24,8 @@ class CompanyRepository {
       return await db.company.create({
         data: {
           name: payload.name,
-          website_url: payload.websiteUrl ||'',
-          location_url: payload.locationUrl || '',
+          website_url: payload.website_url || '',
+          location_url: payload.location_url || '',
           logo_url: '',
           employer_id: employerId,
         },
@@ -45,13 +44,13 @@ class CompanyRepository {
       return await db.company.update({
         where: { employer_id: employerId },
         data: {
-          ...(payload.name !== undefined ? { name: payload.name } : {}),
-          ...(payload.websiteUrl !== undefined 
-            ? { website_url: payload.websiteUrl || '' }
-            : {}),
-          ...(payload.locationUrl !== undefined 
-            ? { location_url: payload.locationUrl || '' }
-            : {}),
+          ...(payload.name !== undefined && { name: payload.name }),
+          ...(payload.website_url !== undefined && {
+            website_url: payload.website_url || '',
+          }),
+          ...(payload.location_url !== undefined && {
+            location_url: payload.location_url || '',
+          }),
         },
       });
     } catch (error) {
