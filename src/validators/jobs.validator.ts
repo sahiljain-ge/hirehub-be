@@ -12,6 +12,7 @@ export const validateJobData =
       if (error instanceof ZodError) {
         logger.error(error.message);
         return res.status(StatusCodes.BAD_REQUEST || 400).json({
+          status: 'fail',
           message: 'Validation failed',
           errors: error.issues.map(({ message, path }) => {
             return {

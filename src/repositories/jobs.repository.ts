@@ -2,8 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 import logger from '../config/logger.js';
 import db from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
-import { CreateJobBody } from '../schemas/job.schema.js';
+import { CreateJobBody } from '../schemas/jobs.schema.js';
 import { UUID } from 'node:crypto';
+import { Prisma } from '../generated/client.js';
 
 class JobRepository {
   async create(payload: CreateJobBody) {
@@ -96,7 +97,7 @@ class JobRepository {
     }
   }
 
-  async getAll() {
+  async getAll(filterObject: Prisma.JobWhereInput, limit: number = 10, offset: number = 0) {
     try {
       return await db.job.findMany({
         include: {
@@ -104,7 +105,10 @@ class JobRepository {
           category: true,
           address: true,
         },
+        where: filterObject,
         orderBy: [{ is_open: 'desc' }, { created_at: 'desc' }],
+        take: +limit,
+        skip: +offset,
       });
     } catch (error) {
       logger.error(error);

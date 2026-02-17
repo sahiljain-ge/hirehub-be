@@ -20,6 +20,8 @@ model User {
   updated_at  DateTime   @updatedAt
   company     Company?
   jobSeeker   JobSeeker?
+
+  testimonials Testimonial[]
 }
 
 model Company {
@@ -44,6 +46,7 @@ model JobSeeker {
   applications     Application[]
   user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   skills           JobSeekerSkill[]
+  bookmarks        Bookmark[]
 }
 
 model Job {
@@ -71,6 +74,13 @@ model Job {
   category             JobCategory       @relation(fields: [category_id], references: [id])
   company              Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
   skills               JobSkill[]
+  bookmarks            Bookmark[]
+
+  @@index([company_id])
+  @@index([category_id])
+  @@index([address_id])
+  @@index([is_open])
+  @@index([deadline])
 }
 
 model Addresses {
@@ -87,7 +97,7 @@ model Application {
   job_id           String
   seeker_id        String
   cover_letter_url String?
-  status           ApplicationStatus
+  status           ApplicationStatus @default(APPLIED)
   applied_at       DateTime          @default(now())
   job              Job               @relation(fields: [job_id], references: [id], onDelete: Cascade)
   seeker           JobSeeker         @relation(fields: [seeker_id], references: [id], onDelete: Cascade)
@@ -124,6 +134,34 @@ model JobCategory {
   id   Int    @id @default(autoincrement())
   name String
   jobs Job[]
+}
+
+model Bookmark {
+  job_seeker_id String
+  job_id        String
+  created_at    DateTime @default(now())
+
+  jobSeeker     JobSeeker @relation(fields: [job_seeker_id], references: [id], onDelete: Cascade)
+  job           Job       @relation(fields: [job_id], references: [id], onDelete: Cascade)
+
+  @@id([job_seeker_id, job_id])
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  message    String
+  rating     Int
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+}
+
+model NewsSubscriber {
+  id    Int    @id @default(autoincrement())
+  email String @unique
 }
 
 enum Role {

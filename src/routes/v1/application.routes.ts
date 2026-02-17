@@ -4,7 +4,7 @@ import ApplicationService from '../../services/application.service.js';
 import ApplicationController from '../../controllers/application.controller.js';
 import asyncHandler from '../../middlewares/asyncHandler.js';
 import authMiddleware from '../../middlewares/auth.middleware.js';
-import { requireEmployer } from '../../middlewares/requireEmployer.middleware.js';
+import { requireEmployer } from '../../middlewares/auth.middleware.js';
 
 import { validate } from '../../validators/application.validator.js';
 import {

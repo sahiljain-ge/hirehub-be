@@ -103,29 +103,28 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/Uuid'
-        firstName:
+        user_id:
+          $ref: '#/components/schemas/Uuid'
+        first_name:
           type: string
           description: Seeker's first name
-        lastName:
+        last_name:
           type: string
           description: Seeker's last name
         bio:
           type: string
           nullable: true
           description: Short professional bio
-        experienceLevel:
+        experience_level:
           type: string
-          enum: [entry_level, junior, mid_level, senior, lead, executive]
+          enum: [NO_EXP, FRESHER, INTERMEDIATE, EXPERT]
           nullable: true
           description: Years/expertise level indicator
-        resumeUrl:
+        resume_url:
           type: string
           format: uri
           nullable: true
           description: Public URL to uploaded resume
-        createdAt:
-          type: string
-          format: date-time
 
     Company:
       type: object
@@ -417,6 +416,39 @@ paths:
           $ref: '#/components/responses/Unauthorized'
 
   /job-seeker/profile:
+    post:
+      tags: [Job Seeker Profile]
+      summary: Create authenticated job seeker's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [first_name, last_name]
+              properties:
+                first_name: { type: string }
+                last_name: { type: string }
+                bio: { type: string }
+                experience_level:
+                  type: string
+                  enum: [NO_EXP, FRESHER, INTERMEDIATE, EXPERT]
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobSeekerProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
     get:
       tags: [Job Seeker Profile]
       summary: Retrieve authenticated job seeker's profile
@@ -442,12 +474,12 @@ paths:
             schema:
               type: object
               properties:
-                firstName: { type: string }
-                lastName: { type: string }
+                first_name: { type: string }
+                last_name: { type: string }
                 bio: { type: string }
-                experienceLevel:
+                experience_level:
                   type: string
-                  enum: [entry_level, junior, mid_level, senior, lead, executive]
+                  enum: [NO_EXP, FRESHER, INTERMEDIATE, EXPERT]
       responses:
         '200':
           description: Profile updated
@@ -479,7 +511,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  resumeUrl: { type: string, format: uri }
+                  resume_url: { type: string, format: uri }
 
   /job-seeker/skills:
     get:
