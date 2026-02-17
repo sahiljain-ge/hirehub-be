@@ -11,7 +11,7 @@ export const validateCompanyData =
     } catch (error) {
       if (error instanceof ZodError) {
         logger.error(error.message);
-        return res.status(StatusCodes.BAD_REQUEST || 400).json({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message: 'Validation failed',
           errors: error.issues.map(({ message, path }) => {
             return {

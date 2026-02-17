@@ -1,7 +1,9 @@
+import type { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import CompanyRepository from '../repositories/company.repository.js';
 import AppError from '../utils/AppError.js';
 import { CreateCompanyBody, UpdateCompanyBody } from '../schemas/company.schema.js';
+import { fileUploadService } from '../services/storage/file-upload.services.js';
 
 class CompanyService {
   constructor(private readonly companyRepository: CompanyRepository) {}
@@ -28,10 +30,23 @@ class CompanyService {
     return await this.companyRepository.updateByEmployerId(employerId, payload);
   }
 
-  async updateCompanyLogo(employerId: string, logoUrl: string) {
-    await this.getCompanyProfile(employerId);
-    return await this.companyRepository.updateLogo(employerId, logoUrl);
-  }
+  async updateCompanyLogo(
+  employerId: string,
+  file: Express.Multer.File,
+) {
+  await this.getCompanyProfile(employerId);
+
+  const uploadResult = await fileUploadService.upload(
+    'logo',
+    file,
+    { userId: employerId },
+  );
+
+  return this.companyRepository.updateLogo(
+    employerId,
+    uploadResult.url,
+  );
+}
 }
 
 export default CompanyService;
