@@ -1,95 +1,75 @@
-import { Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import { UUID } from "node:crypto";
-import JobSeekerService from "../services/jobSeeker.service.js";
-import { sendSuccess, sendFail } from "../utils/responseFormatter.js";
+import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { UUID } from 'node:crypto';
+import JobSeekerService from '../services/jobSeeker.service.js';
+import { sendSuccess, sendFail } from '../utils/responseFormatter.js';
 
 class JobSeekerController {
-    constructor(private readonly jobSeekerService: JobSeekerService) { }
+  constructor(private readonly jobSeekerService: JobSeekerService) {}
 
-    getSkills = async (req: Request, res: Response) => {
-        if (!req.user) {
-            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
-        }
+  getSkills = async (req: Request, res: Response) => {
+    if (!req.user) {
+      return sendFail(res, 'Unauthorized', StatusCodes.UNAUTHORIZED);
+    }
 
-        const seekerId = req.user.id as UUID;
-        const skills = await this.jobSeekerService.getSkills(seekerId);
+    const seekerId = req.user.id as UUID;
+    const skills = await this.jobSeekerService.getSkills(seekerId);
 
-        return sendSuccess(res, skills);
-    };
+    return sendSuccess(res, skills);
+  };
 
-    addSkills = async (req: Request, res: Response) => {
-        if (!req.user) {
-            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
-        }
+  addSkills = async (req: Request, res: Response) => {
+    if (!req.user) {
+      return sendFail(res, 'Unauthorized', StatusCodes.UNAUTHORIZED);
+    }
 
-        const seekerId = req.user.id as UUID;
-        const skillIds: number[] = req.body.skillIds;
+    const userId = req.user.id as UUID;
 
-        if (!Array.isArray(skillIds) || skillIds.length === 0) {
-            return sendFail(
-                res,
-                "skillIds must be a non-empty array",
-                StatusCodes.BAD_REQUEST
-            );
-        }
+    const skillIds: number[] = req.body.skillIds;
 
-        await this.jobSeekerService.addSkills(seekerId, skillIds);
+    if (!Array.isArray(skillIds) || skillIds.length === 0) {
+      return sendFail(res, 'skillIds must be a non-empty array', StatusCodes.BAD_REQUEST);
+    }
 
-        return sendSuccess(
-            res,
-            null,
-            "Skills added successfully",
-            StatusCodes.OK
-        );
-    };
+    await this.jobSeekerService.addSkills(userId, skillIds);
 
-    deleteSkills = async (req: Request, res: Response) => {
-        if (!req.user) {
-            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
-        }
+    return sendSuccess(res, [], 'Skills added successfully', StatusCodes.OK);
+  };
 
-        const seekerId = req.user.id as UUID;
-        const skillIds: number[] = req.body.skillIds;
+  deleteSkills = async (req: Request, res: Response) => {
+    if (!req.user) {
+      return sendFail(res, 'Unauthorized', StatusCodes.UNAUTHORIZED);
+    }
 
-        if (!Array.isArray(skillIds) || skillIds.length === 0) {
-            return sendFail(
-                res,
-                "skillIds must be a non-empty array",
-                StatusCodes.BAD_REQUEST
-            );
-        }
+    const seekerId = req.user.id as UUID;
+    const skillIds: number[] = req.body.skillIds;
 
-        await this.jobSeekerService.deleteSkills(seekerId, skillIds);
+    if (!Array.isArray(skillIds) || skillIds.length === 0) {
+      return sendFail(res, 'skillIds must be a non-empty array', StatusCodes.BAD_REQUEST);
+    }
+    await this.jobSeekerService.deleteSkills(seekerId, skillIds);
 
-        return sendSuccess(
-            res,
-            null,
-            "Skills deleted successfully",
-            StatusCodes.OK
-        );
-    };
+    return sendSuccess(res, undefined, 'Skills deleted successfully', StatusCodes.NO_CONTENT);
+  };
 
-    deleteSingleSkill = async (req: Request, res: Response) => {
-        if (!req.user) {
-            return sendFail(res, "Unauthorized", StatusCodes.UNAUTHORIZED);
-        }
+  deleteSingleSkill = async (req: Request, res: Response) => {
+    if (!req.user) {
+      return sendFail(res, 'Unauthorized', StatusCodes.UNAUTHORIZED);
+    }
 
-        const seekerId = req.user.id as UUID;
-        const { skillId } = req.params;
+    const seekerId = req.user.id as UUID;
+    const { skillId } = req.params;
 
-        const parsedSkillId = Number(skillId);
-        if (Number.isNaN(parsedSkillId)) {
-            return sendFail(res, "Invalid skillId", StatusCodes.BAD_REQUEST);
-        }
+    const parsedSkillId = Number(skillId);
+    if (Number.isNaN(parsedSkillId)) {
+      return sendFail(res, 'Invalid skillId', StatusCodes.BAD_REQUEST);
+    }
 
-        await this.jobSeekerService.deleteSingleSkill(
-            seekerId,
-            parsedSkillId
-        );
+    await this.jobSeekerService.deleteSingleSkill(seekerId, parsedSkillId);
 
-        return sendSuccess(res, null, "Skill deleted", StatusCodes.OK);
-    };
+    return sendSuccess(res, null, 'Skill deleted', StatusCodes.OK);
+  };
 }
 
 export default JobSeekerController;
+

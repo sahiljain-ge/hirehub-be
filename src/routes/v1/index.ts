@@ -28,3 +28,4 @@ router.use('/addresses', addressRoutes);
 router.use("/job-seeker/skills", JobSeekerRoutes)
 
 export default router;
+
