@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 export const {
   PORT,
-  CLIENT_URL,
+  CLIENT_URLS,
   NODE_ENV,
   DATABASE_URL,
   ACCESS_TOKEN_SECRET,
@@ -19,3 +19,5 @@ export const {
   REG_OTP_TEMPLATE_ID,
   RESET_OTP_TEMPLATE_ID,
 } = process.env;
+
+export const allowedOrigins = CLIENT_URLS ? CLIENT_URLS.split(',') : [];
