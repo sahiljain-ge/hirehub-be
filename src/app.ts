@@ -8,7 +8,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middlewares/errorHandler.js';
 import apiRoutes from './routes/index.js';
-import { CLIENT_URL } from './config/server-config.js';
+import { allowedOrigins } from './config/server-config.js'; 
+import AppError from './utils/AppError.js';
+import { StatusCodes } from 'http-status-codes';
 
 const app: Application = express();
 
@@ -17,8 +19,17 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: CLIENT_URL,
-    credentials: true,
+    origin: (origin, callback) => {
+      if (origin && allowedOrigins.includes(origin)) {
+        callback(null, true); 
+      } else if (!origin) {
+        callback(null, true)
+      }
+      else {
+        callback(new AppError('Not allowed by CORS', StatusCodes.FORBIDDEN), false); 
+      }
+    },
+    credentials: true, 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
