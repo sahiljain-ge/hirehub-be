@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { ExperienceLevel, JobType } from '../generated/enums.js';
 
 const numOrArraySchema = z.union([
-  z.number('id must be positive integer').int().positive(),
-  z.array(z.number()),
+  z.coerce.number('id must be positive integer').int().positive(),
+  z.array(z.coerce.number()),
 ]);
 
 const jobTypeOrArray = z.union([z.enum(JobType), z.enum(JobType).array()]);
