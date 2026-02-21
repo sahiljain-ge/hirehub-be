@@ -10,6 +10,8 @@ import {
 import JobSeekerProfileRepository from '../../repositories/job-seeker-profile.repository.js';
 import JobSeekerProfileService from '../../services/job-seeker-profile.services.js';
 import uploadSingle from '../../middlewares/upload.middleware.js';
+import { DEFAULT_POLICIES } from '../../constants/storage/upload-policies.js';
+import { FILE_UPLOAD_MESSAGES } from '../../constants/response.messages.js';
 
 const jobSeekerRoutes = Router();
 jobSeekerRoutes.use(authMiddleware);
@@ -33,7 +35,18 @@ jobSeekerRoutes.put(
 );
 jobSeekerRoutes.post(
   '/resume',
-  uploadSingle('resume'),
+  uploadSingle('resume', {
+    required: true,
+    maxBytes: DEFAULT_POLICIES.resume.maxBytes,
+    allowedMimeTypes: DEFAULT_POLICIES.resume.allowedMimeTypes,
+    allowedExtensions: DEFAULT_POLICIES.resume.allowedFormats,
+    messages: {
+      required: FILE_UPLOAD_MESSAGES.RESUME_REQUIRED,
+      size: FILE_UPLOAD_MESSAGES.RESUME_TOO_LARGE,
+      type: FILE_UPLOAD_MESSAGES.RESUME_UNSUPPORTED_TYPE,
+      extension: FILE_UPLOAD_MESSAGES.RESUME_UNSUPPORTED_TYPE,
+    },
+  }),
   asyncHandler(jobSeekerProfileController.uploadJobSeekerResume),
 );
 

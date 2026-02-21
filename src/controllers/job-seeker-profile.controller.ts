@@ -7,6 +7,7 @@ import {
   UpdateJobSeekerProfileBody,
 } from '../schemas/job-seeker.schema.js';
 import { FILE_UPLOAD_MESSAGES, JobSeekerProfileMessages } from '../constants/response.messages.js';
+import AppError from '../utils/AppError.js';
 
 type RequestWithFile = Request & { file?: Express.Multer.File };
 
@@ -54,6 +55,10 @@ class JobSeekerProfileController {
   }
 
   async uploadJobSeekerResume(req: RequestWithFile, res: Response) {
+    if (!req.file) {
+      throw new AppError(FILE_UPLOAD_MESSAGES.RESUME_REQUIRED, StatusCodes.BAD_REQUEST);
+    }
+    
     const updatedProfile = await this.jobSeekerProfileService.uploadJobSeekerResume(
       req.user!.id,
       req.file,

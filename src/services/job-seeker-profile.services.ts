@@ -44,7 +44,7 @@ class JobSeekerProfileService {
 
   async uploadJobSeekerResume(userId: string, file: Express.Multer.File | undefined) {
     if (!file) {
-      throw new AppError(FILE_UPLOAD_MESSAGES.NO_FILE_UPLOADED, StatusCodes.BAD_REQUEST);
+      throw new AppError(FILE_UPLOAD_MESSAGES.RESUME_REQUIRED, StatusCodes.BAD_REQUEST);
     }
 
     const existingProfile = await this.jobSeekerProfileRepository.findByUserId(userId);
@@ -69,7 +69,10 @@ class JobSeekerProfileService {
   private buildResumeUploadOptions(userId: string) {
     const safeUserId = this.sanitizeIdentifier(userId);
     if (!safeUserId) {
-      throw new AppError(FILE_UPLOAD_MESSAGES.FILE_NOT_FOUND, StatusCodes.BAD_REQUEST);
+      throw new AppError(
+        JobSeekerProfileMessages.RESUME_UPLOAD_VALIDATION_FAILED,
+        StatusCodes.BAD_REQUEST,
+      );
     }
 
     return {
