@@ -9,19 +9,14 @@ import {
 } from '../../schemas/job-seeker.schema.js';
 import JobSeekerProfileRepository from '../../repositories/job-seeker-profile.repository.js';
 import JobSeekerProfileService from '../../services/job-seeker-profile.services.js';
-import { fileUploadService } from '../../services/storage/file-upload.services.js';
-import { uploadValidator } from '../../validators/upload.validator.js';
-import { FILE_UPLOAD_MESSAGES } from '../../constants/response.messages.js';
+import uploadSingle from '../../middlewares/upload.middleware.js';
 
 const jobSeekerRoutes = Router();
 jobSeekerRoutes.use(authMiddleware);
 jobSeekerRoutes.use(requireJobSeeker);
 
 const jobSeekerProfileRepository = new JobSeekerProfileRepository();
-const jobSeekerProfileService = new JobSeekerProfileService(
-  jobSeekerProfileRepository,
-  fileUploadService,
-);
+const jobSeekerProfileService = new JobSeekerProfileService(jobSeekerProfileRepository);
 const jobSeekerProfileController = new JobSeekerProfileController(jobSeekerProfileService);
 const jobSeekerProfileValidator = new JobSeekerProfileValidator();
 
@@ -38,8 +33,7 @@ jobSeekerRoutes.put(
 );
 jobSeekerRoutes.post(
   '/resume',
-  fileUploadService.middleware('resume', 'resume'),
-  uploadValidator.requireFile('resume', FILE_UPLOAD_MESSAGES.RESUME_REQUIRED),
+  uploadSingle('resume'),
   asyncHandler(jobSeekerProfileController.uploadJobSeekerResume),
 );
 
