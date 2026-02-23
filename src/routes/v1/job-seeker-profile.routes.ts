@@ -9,19 +9,15 @@ import {
 } from '../../schemas/job-seeker.schema.js';
 import JobSeekerProfileRepository from '../../repositories/job-seeker-profile.repository.js';
 import JobSeekerProfileService from '../../services/job-seeker-profile.services.js';
-import { fileUploadService } from '../../services/storage/file-upload.services.js';
-import { uploadValidator } from '../../validators/upload.validator.js';
+import uploadSingle from '../../middlewares/upload.middleware.js';
 import { FILE_UPLOAD_MESSAGES } from '../../constants/response.messages.js';
-
+import { DEFAULT_POLICIES } from '../../constants/upload-policies.js';
 const jobSeekerRoutes = Router();
 jobSeekerRoutes.use(authMiddleware);
 jobSeekerRoutes.use(requireJobSeeker);
 
 const jobSeekerProfileRepository = new JobSeekerProfileRepository();
-const jobSeekerProfileService = new JobSeekerProfileService(
-  jobSeekerProfileRepository,
-  fileUploadService,
-);
+const jobSeekerProfileService = new JobSeekerProfileService(jobSeekerProfileRepository);
 const jobSeekerProfileController = new JobSeekerProfileController(jobSeekerProfileService);
 const jobSeekerProfileValidator = new JobSeekerProfileValidator();
 
@@ -38,8 +34,18 @@ jobSeekerRoutes.put(
 );
 jobSeekerRoutes.post(
   '/resume',
-  fileUploadService.middleware('resume', 'resume'),
-  uploadValidator.requireFile('resume', FILE_UPLOAD_MESSAGES.RESUME_REQUIRED),
+  uploadSingle('resume', {
+    required: true,
+    maxBytes: DEFAULT_POLICIES.resume.maxBytes,
+    allowedMimeTypes: DEFAULT_POLICIES.resume.allowedMimeTypes,
+    allowedExtensions: DEFAULT_POLICIES.resume.allowedFormats,
+    messages: {
+      required: FILE_UPLOAD_MESSAGES.RESUME_REQUIRED,
+      size: FILE_UPLOAD_MESSAGES.RESUME_TOO_LARGE,
+      type: FILE_UPLOAD_MESSAGES.RESUME_UNSUPPORTED_TYPE,
+      extension: FILE_UPLOAD_MESSAGES.RESUME_UNSUPPORTED_TYPE,
+    },
+  }),
   asyncHandler(jobSeekerProfileController.uploadJobSeekerResume),
 );
 
