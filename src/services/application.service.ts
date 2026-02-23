@@ -8,11 +8,7 @@ import type { UpdateApplicationStatusBody } from '../schemas/application.schema.
 class ApplicationService {
   constructor(private applicationRepository: ApplicationRepository) {}
 
-  async updateStatus(
-    applicationId: UUID,
-    employerId: UUID,
-    body: UpdateApplicationStatusBody,
-  ) {
+  async updateStatus(applicationId: UUID, employerId: UUID, body: UpdateApplicationStatusBody) {
     const app = await this.applicationRepository.findByIdWithJob(applicationId);
 
     if (!app) {
@@ -36,7 +32,7 @@ class ApplicationService {
       jobId: updated.job_id,
       seekerId: updated.seeker_id,
       coverLetterUrl: updated.cover_letter_url,
-      status: updated.status, 
+      status: updated.status,
       appliedAt: updated.applied_at.toISOString(),
     };
   }

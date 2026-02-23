@@ -30,23 +30,13 @@ class CompanyService {
     return await this.companyRepository.updateByEmployerId(employerId, payload);
   }
 
-  async updateCompanyLogo(
-  employerId: string,
-  file: Express.Multer.File,
-) {
-  await this.getCompanyProfile(employerId);
+  async updateCompanyLogo(employerId: string, file: Express.Multer.File) {
+    await this.getCompanyProfile(employerId);
 
-  const uploadResult = await fileUploadService.upload(
-    'logo',
-    file,
-    { userId: employerId },
-  );
+    const uploadResult = await fileUploadService.upload('logo', file, { userId: employerId });
 
-  return this.companyRepository.updateLogo(
-    employerId,
-    uploadResult.url,
-  );
-}
+    return this.companyRepository.updateLogo(employerId, uploadResult.url);
+  }
 }
 
 export default CompanyService;

@@ -8,7 +8,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middlewares/errorHandler.js';
 import apiRoutes from './routes/index.js';
-import { allowedOrigins } from './config/server-config.js'; 
+import { allowedOrigins } from './config/server-config.js';
 import AppError from './utils/AppError.js';
 import { StatusCodes } from 'http-status-codes';
 
@@ -21,15 +21,14 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (origin && allowedOrigins.includes(origin)) {
-        callback(null, true); 
+        callback(null, true);
       } else if (!origin) {
-        callback(null, true)
-      }
-      else {
-        callback(new AppError('Not allowed by CORS', StatusCodes.FORBIDDEN), false); 
+        callback(null, true);
+      } else {
+        callback(new AppError('Not allowed by CORS', StatusCodes.FORBIDDEN), false);
       }
     },
-    credentials: true, 
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),

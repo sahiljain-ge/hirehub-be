@@ -6,8 +6,7 @@ import logger from '../config/logger.js';
 type Source = 'body' | 'params' | 'query';
 
 export const validate =
-  (schema: z.ZodTypeAny, source: Source) =>
-  (req: Request, res: Response, next: NextFunction) => {
+  (schema: z.ZodTypeAny, source: Source) => (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req[source]);
       next();

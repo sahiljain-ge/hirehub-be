@@ -11,8 +11,6 @@ const subscriptionRepository = new SubscriptionRepository();
 const subscriptionService = new SubscriptionService(subscriptionRepository);
 const subscriptionController = new SubscriptionController(subscriptionService);
 
-
 router.post('/newsletter', emailValidator(emailSchema), subscriptionController.subscribeNewsLetter);
-
 
 export default router;

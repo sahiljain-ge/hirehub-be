@@ -9,5 +9,4 @@ export const updateApplicationStatusSchema = z.object({
   status: z.enum(ApplicationStatus),
 });
 
-export type UpdateApplicationStatusBody =
-  z.infer<typeof updateApplicationStatusSchema>;
+export type UpdateApplicationStatusBody = z.infer<typeof updateApplicationStatusSchema>;

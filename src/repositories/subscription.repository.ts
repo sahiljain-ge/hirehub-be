@@ -1,22 +1,22 @@
-import { StatusCodes } from "http-status-codes";
-import db from "../config/prisma.js";
-import type { Email } from "../schemas/email.schema.js";
-import logger from "../config/logger.js";
-import AppError from "../utils/AppError.js";
+import { StatusCodes } from 'http-status-codes';
+import db from '../config/prisma.js';
+import type { Email } from '../schemas/email.schema.js';
+import logger from '../config/logger.js';
+import AppError from '../utils/AppError.js';
 class SubscriptionRepository {
-
   async subscribeNewsLetter(email: string) {
     try {
       const alreadySubscribed = await db.newsSubscriber.findUnique({
         where: {
-          email
-        }
+          email,
+        },
       });
-      if (alreadySubscribed) throw new AppError('You have already subscribed!', StatusCodes.CONFLICT);
+      if (alreadySubscribed)
+        throw new AppError('You have already subscribed!', StatusCodes.CONFLICT);
       return await db.newsSubscriber.create({
         data: {
-          email: email
-        }
+          email: email,
+        },
       });
     } catch (error) {
       logger.error(error);
@@ -27,6 +27,5 @@ class SubscriptionRepository {
       );
     }
   }
-
 }
 export default SubscriptionRepository;
