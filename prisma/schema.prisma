@@ -22,6 +22,7 @@ model User {
   jobSeeker   JobSeeker?
 
   testimonials Testimonial[]
+  posts       Post[]
 }
 
 model Company {
@@ -44,9 +45,9 @@ model JobSeeker {
   experience_level ExperienceLevel
   bio              String
   applications     Application[]
-  user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   skills           JobSeekerSkill[]
   bookmarks        Bookmark[]
+  user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Job {
@@ -65,14 +66,15 @@ model Job {
   deadline             DateTime
   company_id           String
   category_id          Int
-  created_at           DateTime          @default(now())
-  updated_at           DateTime          @updatedAt
   address_id           Int
   min_qualifications   MIN_QUALIFICATION
-  applications         Application[]
-  address              Addresses         @relation(fields: [address_id], references: [id], onDelete: Cascade)
-  category             JobCategory       @relation(fields: [category_id], references: [id])
+  created_at           DateTime          @default(now())
+  updated_at           DateTime          @updatedAt
+
   company              Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  category             JobCategory       @relation(fields: [category_id], references: [id])
+  address              Addresses         @relation(fields: [address_id], references: [id], onDelete: Cascade)
+  applications         Application[]
   skills               JobSkill[]
   bookmarks            Bookmark[]
 
@@ -164,9 +166,25 @@ model NewsSubscriber {
   email String @unique
 }
 
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  slug       String    @unique
+  content    String
+  image_url  String?
+  type       PostType
+  author_id  String
+  status     PostStatus
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  author     User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   JOB_SEEKER
   EMPLOYER
+  ADMIN
 }
 
 enum ExperienceLevel {
@@ -208,4 +226,14 @@ enum MIN_QUALIFICATION {
 enum OTPType {
   VERIFY_EMAIL
   RESET_PASSWORD
+}
+
+enum PostType {
+  NEWS
+  BLOG
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
 }

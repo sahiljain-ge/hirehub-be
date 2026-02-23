@@ -3,7 +3,6 @@ import AppError from '../utils/AppError.js';
 import { StatusCodes } from 'http-status-codes';
 
 class JobSeekerRepository {
-
   async getSeekerById(userId: string) {
     const seeker = await db.jobSeeker.findUnique({
       where: {
