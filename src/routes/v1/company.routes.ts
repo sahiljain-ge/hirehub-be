@@ -18,7 +18,7 @@ const companyService = new CompanyService(companyRepo);
 const companyController = new CompanyController(companyService);
 
 router.post(
-  '/company',
+  '/',
   authMiddleware,
   requireEmployer,
   validateCompanyData(createCompanySchema),
