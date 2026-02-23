@@ -51,5 +51,6 @@ export const requireRole = (allowedRole: Role) => {
 
 export const requireEmployer = requireRole(Role.EMPLOYER);
 export const requireJobSeeker = requireRole(Role.JOB_SEEKER);
+export const requireAdmin = requireRole(Role.ADMIN);
 
 export default authMiddleware;
