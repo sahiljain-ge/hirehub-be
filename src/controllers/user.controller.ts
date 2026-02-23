@@ -5,6 +5,7 @@ import { sendError, sendFail, sendSuccess } from '../utils/responseFormatter.js'
 import { signAccessToken, verifyRefreshToken } from '../utils/jwt.js';
 import { JwtPayload } from 'jsonwebtoken';
 import { OTPType } from '../generated/enums.js';
+import AppError from '../utils/AppError.js';
 
 class UserController {
   constructor(private userService: UserService) {}
@@ -85,6 +86,14 @@ class UserController {
 
     sendSuccess(res, accessToken, 'New access token', StatusCodes.OK);
   };
+
+  resendOTP = async (req: Request, res: Response) => {
+  const { email, type } = req.body;
+  if(!req.ip) throw new AppError('IP not found', StatusCodes.UNAUTHORIZED);
+  await this.userService.resendOTP(email, type, req.ip);
+
+  sendSuccess(res, null, 'OTP resent successfully', StatusCodes.OK);
+};
 }
 
 export default UserController;
