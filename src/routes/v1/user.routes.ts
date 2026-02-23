@@ -27,5 +27,5 @@ router.post('/logout', asyncHandler(userController.logout));
 router.post('/forgot-password', asyncHandler(userController.forgotPassword));
 router.post('/forgot-password/verify-otp', asyncHandler(userController.verifyForgotPasswordOTP));
 router.post('/forgot-password/reset', asyncHandler(userController.resetPassword));
-
+router.post('/resend-otp', asyncHandler(userController.resendOTP));
 export default router;
