@@ -18,6 +18,10 @@ export const {
   EMAILJS_PRIVATE_KEY,
   REG_OTP_TEMPLATE_ID,
   RESET_OTP_TEMPLATE_ID,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+  CLOUDINARY_CLOUD_NAME,
+  STORAGE_PROVIDER,
 } = process.env;
 
 export const allowedOrigins = CLIENT_URLS ? CLIENT_URLS.split(',') : [];

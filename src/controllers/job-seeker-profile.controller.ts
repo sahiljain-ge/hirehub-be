@@ -7,6 +7,7 @@ import {
   UpdateJobSeekerProfileBody,
 } from '../schemas/job-seeker.schema.js';
 import { FILE_UPLOAD_MESSAGES, JobSeekerProfileMessages } from '../constants/response.messages.js';
+import AppError from '../utils/AppError.js';
 
 type RequestWithFile = Request & { file?: Express.Multer.File };
 
@@ -28,7 +29,7 @@ class JobSeekerProfileController {
       res,
       createdProfile,
       JobSeekerProfileMessages.CREATE_SUCCESS,
-      StatusCodes.CREATED,
+      StatusCodes.CREATED || 201,
     );
   }
 
@@ -36,7 +37,7 @@ class JobSeekerProfileController {
     const userId = req.user!.id;
     const profile = await this.jobSeekerProfileService.getJobSeekerProfile(userId);
 
-    return sendSuccess(res, profile, JobSeekerProfileMessages.GET_SUCCESS, StatusCodes.OK);
+    return sendSuccess(res, profile, JobSeekerProfileMessages.GET_SUCCESS, StatusCodes.OK || 200);
   }
 
   async updateJobSeekerProfile(req: Request, res: Response) {
@@ -49,11 +50,15 @@ class JobSeekerProfileController {
       res,
       updatedProfile,
       JobSeekerProfileMessages.UPDATE_SUCCESS,
-      StatusCodes.OK,
+      StatusCodes.OK || 200,
     );
   }
 
   async uploadJobSeekerResume(req: RequestWithFile, res: Response) {
+    if (!req.file) {
+      throw new AppError(FILE_UPLOAD_MESSAGES.RESUME_REQUIRED, StatusCodes.BAD_REQUEST || 400);
+    }
+
     const updatedProfile = await this.jobSeekerProfileService.uploadJobSeekerResume(
       req.user!.id,
       req.file,
@@ -63,7 +68,7 @@ class JobSeekerProfileController {
       res,
       { resume_url: updatedProfile?.resume_url },
       FILE_UPLOAD_MESSAGES.RESUME_UPLOAD_SUCCESS,
-      StatusCodes.OK,
+      StatusCodes.OK || 200,
     );
   }
 }
