@@ -8,7 +8,7 @@ import { signAccessToken, signRefreshToken } from '../utils/jwt.js';
 import { generateOTP, verifyOTP } from '../utils/otp.js';
 import { OTPType } from '../generated/enums.js';
 import { REG_OTP_TEMPLATE_ID, RESET_OTP_TEMPLATE_ID } from '../config/server-config.js';
-import {getRedis} from '../config/redis.config.js';
+import { getRedis } from '../config/redis.config.js';
 
 class UserService {
   constructor(private readonly userRepository: UserRepository) {}
@@ -124,73 +124,68 @@ class UserService {
   }
 
   async resendOTP(email: string, type: OTPType, ip: string) {
-  const redis = getRedis();
-  const user = await this.userRepository.findByEmail(email);
-  if (!user) {
-    throw new AppError('User not found', StatusCodes.NOT_FOUND);
-  }
+    const redis = getRedis();
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new AppError('User not found', StatusCodes.NOT_FOUND);
+    }
 
-  if (type === OTPType.VERIFY_EMAIL && user.is_verified) {
-    throw new AppError('Email already verified', StatusCodes.BAD_REQUEST);
-  }
+    if (type === OTPType.VERIFY_EMAIL && user.is_verified) {
+      throw new AppError('Email already verified', StatusCodes.BAD_REQUEST);
+    }
 
-  const cooldownKey = `otp:cooldown:${email}`;
-  const hourlyKey = `otp:hourly:${email}`;
-  const ipKey = `otp:ip:${ip}`;
+    const cooldownKey = `otp:cooldown:${email}`;
+    const hourlyKey = `otp:hourly:${email}`;
+    const ipKey = `otp:ip:${ip}`;
 
-  const cooldownTTL = await redis.ttl(cooldownKey);
-  if (cooldownTTL > 0) {
-    throw new AppError(
-      `Wait ${cooldownTTL}s before requesting again`,
-      StatusCodes.TOO_MANY_REQUESTS
+    const cooldownTTL = await redis.ttl(cooldownKey);
+    if (cooldownTTL > 0) {
+      throw new AppError(
+        `Wait ${cooldownTTL}s before requesting again`,
+        StatusCodes.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const attempts = await redis.incr(hourlyKey);
+    if (attempts === 1) {
+      await redis.expire(hourlyKey, 3600);
+    }
+
+    if (attempts > 2) {
+      const ttl = await redis.ttl(hourlyKey);
+      throw new AppError(
+        `Too many OTP requests. Try again in ${Math.ceil(ttl / 60)} min`,
+        StatusCodes.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const ipAttempts = await redis.incr(ipKey);
+    if (ipAttempts === 1) {
+      await redis.expire(ipKey, 3600);
+    }
+
+    if (ipAttempts > 20) {
+      throw new AppError(`Too many requests from this IP`, StatusCodes.TOO_MANY_REQUESTS);
+    }
+
+    await redis.set(cooldownKey, '1', { ex: 60 });
+
+    const { otp, hashedOTP, expiresAt } = await generateOTP();
+
+    await sendOtp(
+      user.email,
+      otp,
+      type === OTPType.VERIFY_EMAIL ? REG_OTP_TEMPLATE_ID! : RESET_OTP_TEMPLATE_ID!,
     );
+
+    await this.userRepository.updateByEmail(email, {
+      otp: hashedOTP,
+      otp_type: type,
+      expires_at: expiresAt,
+    });
+
+    return true;
   }
-
-  const attempts = await redis.incr(hourlyKey);
-  if (attempts === 1) {
-    await redis.expire(hourlyKey, 3600);
-  }
-
-  if (attempts > 2) {
-    const ttl = await redis.ttl(hourlyKey);
-    throw new AppError(
-      `Too many OTP requests. Try again in ${Math.ceil(ttl / 60)} min`,
-      StatusCodes.TOO_MANY_REQUESTS
-    );
-  }
-
-  const ipAttempts = await redis.incr(ipKey);
-  if (ipAttempts === 1) {
-    await redis.expire(ipKey, 3600);
-  }
-
-  if (ipAttempts > 20) {
-    throw new AppError(
-      `Too many requests from this IP`,
-      StatusCodes.TOO_MANY_REQUESTS
-    );
-  }
-
-  await redis.set(cooldownKey, '1', { ex: 60 });
-
-  const { otp, hashedOTP, expiresAt } = await generateOTP();
-
-  await sendOtp(
-    user.email,
-    otp,
-    type === OTPType.VERIFY_EMAIL
-      ? REG_OTP_TEMPLATE_ID!
-      : RESET_OTP_TEMPLATE_ID!
-  );
-
-  await this.userRepository.updateByEmail(email, {
-    otp: hashedOTP,
-    otp_type: type,
-    expires_at: expiresAt,
-  });
-
-  return true;
-}
 }
 
 export default UserService;

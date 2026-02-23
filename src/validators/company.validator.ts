@@ -24,7 +24,3 @@ export const validateCompanyData =
       next(error);
     }
   };
-
-
-
-

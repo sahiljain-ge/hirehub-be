@@ -27,17 +27,9 @@ class CompanyController {
       throw new AppError('Logo file is required', StatusCodes.BAD_REQUEST);
     }
 
-    const company = await this.companyService.updateCompanyLogo(
-      req.user!.id,
-      req.file
-    );
+    const company = await this.companyService.updateCompanyLogo(req.user!.id, req.file);
 
-    return sendSuccess(
-      res,
-      { logo_url: company.logo_url },
-      'Logo updated',
-      StatusCodes.OK
-    );
+    return sendSuccess(res, { logo_url: company.logo_url }, 'Logo updated', StatusCodes.OK);
   };
 }
 

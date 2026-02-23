@@ -88,12 +88,12 @@ class UserController {
   };
 
   resendOTP = async (req: Request, res: Response) => {
-  const { email, type } = req.body;
-  if(!req.ip) throw new AppError('IP not found', StatusCodes.UNAUTHORIZED);
-  await this.userService.resendOTP(email, type, req.ip);
+    const { email, type } = req.body;
+    if (!req.ip) throw new AppError('IP not found', StatusCodes.UNAUTHORIZED);
+    await this.userService.resendOTP(email, type, req.ip);
 
-  sendSuccess(res, null, 'OTP resent successfully', StatusCodes.OK);
-};
+    sendSuccess(res, null, 'OTP resent successfully', StatusCodes.OK);
+  };
 }
 
 export default UserController;

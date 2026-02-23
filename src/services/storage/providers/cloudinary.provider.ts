@@ -7,7 +7,7 @@ import { FILE_UPLOAD_MESSAGES } from '../../../constants/response.messages.js';
 
 cloudinary.config(CLOUDINARY_CONFIG);
 
-type ResourceType = 'auto' | 'image' |'video';
+type ResourceType = 'auto' | 'image' | 'video';
 
 export interface UploadOptions {
   folder: string;

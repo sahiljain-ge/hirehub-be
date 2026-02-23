@@ -72,4 +72,3 @@ class JobSeekerController {
 }
 
 export default JobSeekerController;
-
