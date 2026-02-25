@@ -11,7 +11,7 @@ class JobSeekerRepository {
     });
 
     if (!seeker) {
-      throw new AppError('Job seeker Id not found', StatusCodes.UNAUTHORIZED);
+      throw new AppError('Job seeker Id not found', StatusCodes.NOT_FOUND);
     }
 
     return seeker;
