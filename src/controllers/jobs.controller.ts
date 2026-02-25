@@ -45,15 +45,24 @@ class JobController {
   }
 
   async getAllJobs(req: Request, res: Response) {
-    const jobs = await this.jobService.getAllJobs(req.query);
-    return sendSuccess(res, jobs, 'Succssfully fetched all jobs', StatusCodes.OK);
+    const response = await this.jobService.getAllJobs(req.query);
+    // const jobs = response.map((job) => ({
+    //   ...job,
+    //   key_responsibilities: JSON.parse(job.key_responsibilities),
+    // }));
+    return sendSuccess(res, response, 'Succssfully fetched all jobs', StatusCodes.OK);
   }
 
   async getJobById(req: Request, res: Response) {
     const jobId = <UUID>req.params.id;
     const response = await this.jobService.getJobById(jobId);
     const skills = response.skills.map(({ skill }) => ({ id: skill.id, name: skill.name }));
-    const job = { ...response, skills: skills };
+    const job = {
+      ...response,
+      skills: skills,
+      key_responsibilities: JSON.parse(response.key_responsibilities),
+      professional_skills: JSON.parse(response.professional_skills),
+    };
     return sendSuccess(res, job, 'Successfully fetched job details');
   }
 }
