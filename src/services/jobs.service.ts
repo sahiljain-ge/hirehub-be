@@ -3,8 +3,7 @@ import JobRepository from '../repositories/jobs.repository.js';
 import { CreateJobBody } from '../schemas/jobs.schema.js';
 import AppError from '../utils/AppError.js';
 import { StatusCodes } from 'http-status-codes';
-import { ExperienceLevel, JobType, Prisma } from '../generated/client.js';
-import { title } from 'node:process';
+import { Prisma } from '../generated/client.js';
 import { JobsFiltersSchema } from '../schemas/jobs.filters.schema.js';
 
 class JobService {

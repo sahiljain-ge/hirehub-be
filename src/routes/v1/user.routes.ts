@@ -9,9 +9,9 @@ import authMiddleware from '../../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-const userRepo = new UserRepository();
-const userService = new UserService(userRepo);
-const userController = new UserController(userService);
+export const userRepo = new UserRepository();
+export const userService = new UserService(userRepo);
+export const userController = new UserController(userService);
 
 router.post(
   '/register',
