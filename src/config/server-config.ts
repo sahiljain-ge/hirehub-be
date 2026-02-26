@@ -1,0 +1,23 @@
+import dotenv from 'dotenv';
+dotenv.config();
+export const {
+  PORT,
+  CLIENT_URLS,
+  NODE_ENV,
+  DATABASE_URL,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_EXPIRY,
+  REFRESH_TOKEN_EXPIRY,
+  BCRYPT_SALT,
+  EMAIL_HOST_NAME,
+  EMAIL,
+  EMAIL_PASS,
+  EMAILJS_PUBLIC_KEY,
+  EMAILJS_SERVICE_ID,
+  EMAILJS_PRIVATE_KEY,
+  REG_OTP_TEMPLATE_ID,
+  RESET_OTP_TEMPLATE_ID,
+} = process.env;
+
+export const allowedOrigins = CLIENT_URLS ? CLIENT_URLS.split(',') : [];

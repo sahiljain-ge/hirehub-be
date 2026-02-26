@@ -1,0 +1,26 @@
+import { Request, Response, NextFunction } from 'express';
+import { z, ZodError } from 'zod';
+import { StatusCodes } from 'http-status-codes';
+import logger from '../config/logger.js';
+
+export const validateCompanyData =
+  (schema: z.ZodTypeAny) => (req: Request, res: Response, next: NextFunction) => {
+    try {
+      schema.parse(req.body);
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        logger.error(error.message);
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: 'Validation failed',
+          errors: error.issues.map(({ message, path }) => {
+            return {
+              path: path[0],
+              issue: message,
+            };
+          }),
+        });
+      }
+      next(error);
+    }
+  };

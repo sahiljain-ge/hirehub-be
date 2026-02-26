@@ -1,0 +1,239 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String     @id @default(uuid())
+  email       String     @unique
+  password    String
+  role        Role
+  otp         String?
+  otp_type    OTPType?
+  expires_at  DateTime?
+  is_verified Boolean    @default(false)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  company     Company?
+  jobSeeker   JobSeeker?
+
+  testimonials Testimonial[]
+  posts       Post[]
+}
+
+model Company {
+  id           String @id @default(uuid())
+  name         String
+  website_url  String
+  location_url String
+  logo_url     String
+  employer_id  String @unique
+  employer     User   @relation(fields: [employer_id], references: [id], onDelete: Cascade)
+  jobs         Job[]
+}
+
+model JobSeeker {
+  id               String           @id @default(uuid())
+  user_id          String           @unique
+  first_name       String
+  last_name        String?
+  resume_url       String
+  experience_level ExperienceLevel
+  bio              String
+  applications     Application[]
+  skills           JobSeekerSkill[]
+  bookmarks        Bookmark[]
+  user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id                   String            @id @default(uuid())
+  title                String
+  description          String
+  job_type             JobType
+  key_responsibilities String
+  professional_skills  String
+  job_location_url     String
+  work_mode            WorkMode
+  salary_min           Int
+  salary_max           Int
+  experience_level     ExperienceLevel
+  is_open              Boolean           @default(true)
+  deadline             DateTime
+  company_id           String
+  category_id          Int
+  address_id           Int
+  min_qualifications   MIN_QUALIFICATION
+  created_at           DateTime          @default(now())
+  updated_at           DateTime          @updatedAt
+
+  company              Company           @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  category             JobCategory       @relation(fields: [category_id], references: [id])
+  address              Addresses         @relation(fields: [address_id], references: [id], onDelete: Cascade)
+  applications         Application[]
+  skills               JobSkill[]
+  bookmarks            Bookmark[]
+
+  @@index([company_id])
+  @@index([category_id])
+  @@index([address_id])
+  @@index([is_open])
+  @@index([deadline])
+}
+
+model Addresses {
+  id          Int    @id @default(autoincrement())
+  city        String
+  state       String
+  country     String
+  postal_code String
+  job         Job[]
+}
+
+model Application {
+  id               String            @id @default(uuid())
+  job_id           String
+  seeker_id        String
+  cover_letter_url String?
+  status           ApplicationStatus @default(APPLIED)
+  applied_at       DateTime          @default(now())
+  job              Job               @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  seeker           JobSeeker         @relation(fields: [seeker_id], references: [id], onDelete: Cascade)
+
+  @@unique([job_id, seeker_id])
+}
+
+model JobSeekerSkill {
+  seeker_id String
+  skill_id  Int
+  seeker    JobSeeker @relation(fields: [seeker_id], references: [id], onDelete: Cascade)
+  skill     Skill     @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+
+  @@id([seeker_id, skill_id])
+}
+
+model JobSkill {
+  job_id   String
+  skill_id Int
+  job      Job    @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  skill    Skill  @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+
+  @@id([job_id, skill_id])
+}
+
+model Skill {
+  id         Int              @id @default(autoincrement())
+  name       String
+  jobSeekers JobSeekerSkill[]
+  jobs       JobSkill[]
+}
+
+model JobCategory {
+  id   Int    @id @default(autoincrement())
+  name String
+  jobs Job[]
+}
+
+model Bookmark {
+  job_seeker_id String
+  job_id        String
+  created_at    DateTime @default(now())
+
+  jobSeeker     JobSeeker @relation(fields: [job_seeker_id], references: [id], onDelete: Cascade)
+  job           Job       @relation(fields: [job_id], references: [id], onDelete: Cascade)
+
+  @@id([job_seeker_id, job_id])
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  message    String
+  rating     Int
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+}
+
+model NewsSubscriber {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+}
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  title      String
+  slug       String    @unique
+  content    String
+  image_url  String?
+  type       PostType
+  author_id  String
+  status     PostStatus
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  author     User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  JOB_SEEKER
+  EMPLOYER
+  ADMIN
+}
+
+enum ExperienceLevel {
+  NO_EXP
+  FRESHER
+  INTERMEDIATE
+  EXPERT
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkMode {
+  HYBRID
+  WFO
+  WFH
+  REMOTE
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  REJECTED
+}
+
+enum MIN_QUALIFICATION {
+  MASTERS
+  BACHELORS
+  DIPLOMA
+  HIGH_SCHOOL
+  HIGHER_SECONDARY
+}
+
+enum OTPType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+enum PostType {
+  NEWS
+  BLOG
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}

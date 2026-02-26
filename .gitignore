@@ -1,2 +1,30 @@
-node_modules
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Test
+tests/
+coverage/
+
+# Environment variables
 .env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Misc
+.eslintcache
+
+/src/generated
