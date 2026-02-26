@@ -5,6 +5,9 @@ import JobController from '../../controllers/jobs.controller.js';
 import asyncHandler from '../../middlewares/asyncHandler.js';
 import { validateJobsFilterParams } from '../../validators/jobs.filters.validator.js';
 import { jobsFiltersSchema } from '../../schemas/jobs.filters.schema.js';
+import authMiddleware, { requireEmployer, requireJobSeeker } from '../../middlewares/auth.middleware.js';
+import { applicationController } from './application.routes.js';
+import { fileUploadService } from '../../services/storage/file-upload.services.js';
 
 const router = express.Router();
 
@@ -19,4 +22,18 @@ router.get(
 );
 router.get('/:id', asyncHandler(jobController.getJobById));
 
+router.post(
+  '/:id/apply',
+  authMiddleware,
+  requireJobSeeker,
+  fileUploadService.middleware('coverLetter', 'coverLetter'),
+  asyncHandler(applicationController.applyToJob),
+);
+
+router.get(
+  '/:id/applications',
+  authMiddleware,
+  // requireEmployer,
+  asyncHandler(applicationController.getApplicants),
+);
 export default router;

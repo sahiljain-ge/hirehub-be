@@ -13,8 +13,11 @@ import jobSeekerSkillsRoutes from './jobSeekerSkills.routes.js';
 import companyRoutes from './company.routes.js';
 import postsRoutes from './posts.routes.js';
 import bookmarkRoutes from './bookmark.routes.js'
+import jobSeekerProfileRoutes from './job-seeker-profile.routes.js';
+import jobSeekerAppRoutes from './jobseeker.routes.js';
 
 const router = express.Router();
+
 router.use('/employer', empJobRoutes);
 router.use('/jobs', jobRoutes);
 router.use('/auth', userRoutes);
@@ -30,4 +33,7 @@ router.use('/company', companyRoutes);
 router.use('/posts', postsRoutes);
 router.use('/job-seeker/skills', jobSeekerSkillsRoutes);
 router.use('/job-seeker/bookmarks', bookmarkRoutes);
+router.use('/job-seeker/profile', jobSeekerProfileRoutes);
+router.use('/job-seeker', jobSeekerAppRoutes);
+
 export default router;
