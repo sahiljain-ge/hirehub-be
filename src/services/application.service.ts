@@ -65,6 +65,8 @@ class ApplicationService {
   async createJobApplication(jobId: string, userId: string, file?: Express.Multer.File) {
     const seekerId = await this.getSeekerId(userId);
 
+    const application = await this.applicationRepository.getUserApplicationByJobId(userId, jobId);
+    if (application) throw new AppError('Already Applied', StatusCodes.BAD_REQUEST)
     if(file) {
       const uploadResult = await uploadFile(file);
       return this.applicationRepository.createJobApplication(jobId, seekerId, uploadResult.fileUrl);

@@ -93,6 +93,16 @@ class ApplicationRepository {
     }
   }
 
+  async getUserApplicationByJobId(userId: string, jobId: string) {
+    const seekerId = (await this.getJobSeekerId(userId)).id;
+    return await db.application.findFirst({
+      where: {
+        seeker_id: seekerId,
+        job_id: jobId
+      }
+    })
+  }
+
   async createJobApplication(
     jobId: string,
     seekerId: string,
