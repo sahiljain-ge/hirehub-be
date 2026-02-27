@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import ApplicationRepository from '../repositories/application.repository.js';
 import { ApplicationStatus } from '../generated/enums.js';
 import AppError from '../utils/AppError.js';
+import { uploadFile } from '../utils/fileOperations.js';
 
 class ApplicationService {
   constructor(private applicationRepository: ApplicationRepository) {}
@@ -61,10 +62,15 @@ class ApplicationService {
     return applicants;
   }
 
-  async createJobApplication(jobId: string, userId: string, coverLetterUrl?: string) {
+  async createJobApplication(jobId: string, userId: string, file?: Express.Multer.File) {
     const seekerId = await this.getSeekerId(userId);
 
-    return this.applicationRepository.createJobApplication(jobId, seekerId, coverLetterUrl);
+    if(file) {
+      const uploadResult = await uploadFile(file);
+      return this.applicationRepository.createJobApplication(jobId, seekerId, uploadResult.fileUrl);
+    }
+
+    return this.applicationRepository.createJobApplication(jobId, seekerId);
   }
 
   async withdrawApplication(applicationId: UUID, userId: string) {

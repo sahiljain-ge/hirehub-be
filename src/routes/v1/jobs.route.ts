@@ -7,7 +7,8 @@ import { validateJobsFilterParams } from '../../validators/jobs.filters.validato
 import { jobsFiltersSchema } from '../../schemas/jobs.filters.schema.js';
 import authMiddleware, { requireEmployer, requireJobSeeker } from '../../middlewares/auth.middleware.js';
 import { applicationController } from './application.routes.js';
-import { fileUploadService } from '../../services/storage/file-upload.services.js';
+import uploadSingle from '../../middlewares/upload.middleware.js';
+
 
 const router = express.Router();
 
@@ -26,14 +27,14 @@ router.post(
   '/:id/apply',
   authMiddleware,
   requireJobSeeker,
-  fileUploadService.middleware('coverLetter', 'coverLetter'),
+  uploadSingle('coverLetter'),
   asyncHandler(applicationController.applyToJob),
 );
 
 router.get(
   '/:id/applications',
   authMiddleware,
-  // requireEmployer,
+  requireEmployer,
   asyncHandler(applicationController.getApplicants),
 );
 export default router;
