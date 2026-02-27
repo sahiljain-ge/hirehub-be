@@ -56,11 +56,11 @@ class ApplicationController {
 
     if(!req.file) {
       await this.applicationService.createJobApplication(jobId, req.user.id);
+      return sendSuccess(res, null, 'Applied successfully', StatusCodes.CREATED);
     }
 
       const coverLetter  = req.file;
-      const response = await this.applicationService.createJobApplication(jobId, req.user.id, coverLetter);
-      console.log(response);
+      await this.applicationService.createJobApplication(jobId, req.user.id, coverLetter);
     return sendSuccess(res, null, 'Applied successfully', StatusCodes.CREATED);
   };
 
