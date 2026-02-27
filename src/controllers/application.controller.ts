@@ -54,15 +54,13 @@ class ApplicationController {
       return sendFail(res, 'Job ID cannot be null', StatusCodes.BAD_REQUEST);
     }
 
-    // const response = await this.applicationService.
-
-      // const { cover_letter_url } = req.body;
-      // await this.applicationService.createJobApplication(jobId, req.user.id, cover_letter_url);
-
     if(!req.file) {
       await this.applicationService.createJobApplication(jobId, req.user.id);
     }
 
+      const coverLetter  = req.file;
+      const response = await this.applicationService.createJobApplication(jobId, req.user.id, coverLetter);
+      console.log(response);
     return sendSuccess(res, null, 'Applied successfully', StatusCodes.CREATED);
   };
 

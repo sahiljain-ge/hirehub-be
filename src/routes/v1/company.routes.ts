@@ -8,8 +8,8 @@ import CompanyController from '../../controllers/company.controller.js';
 
 import { validateCompanyData } from '../../validators/company.validator.js';
 import { createCompanySchema, updateCompanySchema } from '../../schemas/company.schema.js';
+import uploadSingle from '../../middlewares/upload.middleware.js';
 
-import { fileUploadService } from '../../services/storage/file-upload.services.js';
 
 const router = express.Router();
 
@@ -44,7 +44,7 @@ router.post(
   '/profile/logo',
   authMiddleware,
   requireEmployer,
-  fileUploadService.middleware('logo', 'logo'),
+  uploadSingle('logo'),
   asyncHandler(companyController.updateCompanyLogo),
 );
 
