@@ -7,7 +7,7 @@ import { UUID } from 'node:crypto';
 import { Prisma } from '../generated/client.js';
 
 class JobRepository {
-  async create(payload: CreateJobBody) {
+  async create(payload: CreateJobBody, companyId: UUID) {
     try {
       return await db.job.create({
         data: {
@@ -22,7 +22,7 @@ class JobRepository {
           key_responsibilities: JSON.stringify(payload.key_responsibilities),
           professional_skills: JSON.stringify(payload.professional_skills),
           deadline: new Date(payload.deadline),
-          company_id: payload.company_id,
+          company_id: companyId,
           category_id: payload.category_id,
           address_id: payload.address_id,
           min_qualifications: payload.min_qualifications,

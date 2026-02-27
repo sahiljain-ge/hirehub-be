@@ -9,8 +9,8 @@ import { JobsFiltersSchema } from '../schemas/jobs.filters.schema.js';
 class JobService {
   constructor(private readonly jobRepository: JobRepository) {}
 
-  async createJob(data: CreateJobBody) {
-    return await this.jobRepository.create(data);
+  async createJob(data: CreateJobBody, companyId: UUID) {
+    return await this.jobRepository.create(data, companyId);
   }
 
   async getAllJobsOfEmp(empId: UUID) {

@@ -17,7 +17,9 @@ class JobController {
 
   async createJob(req: Request, res: Response) {
     const jobData: CreateJobBody = req.body;
-    const response = await this.jobService.createJob(jobData);
+    const companyId = <UUID>req.user?.company_id;
+    if(!companyId) sendError(res, 'Complete your profile first', StatusCodes.BAD_REQUEST);
+    const response = await this.jobService.createJob(jobData, companyId);
     sendSuccess(res, response, 'Successfully created a job', StatusCodes.CREATED);
   }
 
