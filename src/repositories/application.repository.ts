@@ -60,25 +60,44 @@ class ApplicationRepository {
   }
 
   async getApplicationsByUser(seekerId: string) {
-    try {
-      return await db.application.findMany({
-        where: { seeker_id: seekerId },
-        include: { job: true },
-      });
-    } catch (error) {
-      logger.error('Error fetching applications by user', { error, seekerId });
-      throw new AppError(
-        'Failed to fetch user applications',
-        StatusCodes.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
+  try {
+    return await db.application.findMany({
+      where: { seeker_id: seekerId },
+      include: { 
+        job: {
+          select: {
+            title: true,
+            job_type: true,
+            job_location_url: true,
+            created_at: true,
+            address: true,
 
-  async getAllApplicants(jobId: string) {
+            company: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching applications by user', { error, seekerId });
+    throw new AppError(
+      'Failed to fetch user applications',
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
+  async getAllApplicants(jobId: string, companyId: string) {
     try {
       return await db.application.findMany({
         where: {
-          job_id: jobId,
+          job: {
+            id: jobId,
+            company_id: companyId
+          }
         },
         include: {
           seeker: true,
@@ -143,6 +162,21 @@ class ApplicationRepository {
 
       throw new AppError(
         'Failed to withdraw application',
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async getJobDetails(jobId: string) {
+    try {
+      return await db.job.findFirst({
+        where: { id: jobId}
+      })
+    } catch (error) {
+      logger.error('Error retreiving job details', { error, jobId });
+
+      throw new AppError(
+        'Failed to get Job Details',
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
