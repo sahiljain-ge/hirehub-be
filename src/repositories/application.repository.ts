@@ -69,6 +69,8 @@ class ApplicationRepository {
             title: true,
             job_type: true,
             job_location_url: true,
+            salary_max: true,
+            salary_min: true,
             created_at: true,
             address: true,
 
