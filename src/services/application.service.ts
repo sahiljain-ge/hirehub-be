@@ -56,18 +56,26 @@ class ApplicationService {
     return applications;
   }
 
-  async getAllApplicants(jobId: string) {
-    const applicants = await this.applicationRepository.getAllApplicants(jobId);
-    if (applicants.length < 1)  throw new AppError('No applicants are found for this job', StatusCodes.NOT_FOUND);
+  async getAllApplicants(jobId: string, companyId: string) {
+    const applicants = await this.applicationRepository.getAllApplicants(jobId, companyId);
+    if (applicants.length < 1)
+      throw new AppError('No applicants are found for this job', StatusCodes.NOT_FOUND);
     return applicants;
   }
 
   async createJobApplication(jobId: string, userId: string, file?: Express.Multer.File) {
     const seekerId = await this.getSeekerId(userId);
-
     const application = await this.applicationRepository.getUserApplicationByJobId(userId, jobId);
-    if (application) throw new AppError('Already Applied', StatusCodes.BAD_REQUEST)
-    if(file) {
+    if (application) throw new AppError('Already Applied', StatusCodes.BAD_REQUEST);
+
+    const job = await this.applicationRepository.getJobDetails(jobId);
+    if (!job) throw new AppError('Job not Found', StatusCodes.NOT_FOUND);
+    if (!job.is_open) {
+      throw new AppError('This job is no longer accepting applications', StatusCodes.BAD_REQUEST);
+    }
+    if (job.deadline.getTime() < Date.now())
+      throw new AppError('Application deadline has passed', StatusCodes.BAD_REQUEST);
+    if (file) {
       const uploadResult = await uploadFile(file);
       return this.applicationRepository.createJobApplication(jobId, seekerId, uploadResult.fileUrl);
     }

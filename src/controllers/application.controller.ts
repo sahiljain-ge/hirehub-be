@@ -37,8 +37,8 @@ class ApplicationController {
     }
 
     const jobId = <UUID>req.params.id;
-
-    const applicants = await this.applicationService.getAllApplicants(jobId);
+    const companyId = <UUID>req.user.company_id;
+    const applicants = await this.applicationService.getAllApplicants(jobId, companyId);
   
     return sendSuccess(res, applicants,'Successfully fetched applicants', StatusCodes.OK);
 
