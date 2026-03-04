@@ -36,28 +36,29 @@ const authMiddleware = async (req: Request, _res: Response, next: NextFunction) 
     if (user.role == Role.EMPLOYER) {
       const company = await db.company.findUnique({
         where: {
-          employer_id: user.id
-        }
-      })
-      if (!company) throw new AppError('Incomplete company Profile', StatusCodes.BAD_REQUEST
-
-      )
+          employer_id: user.id,
+        },
+      });
+      if (!company) throw new AppError('Incomplete company Profile', StatusCodes.BAD_REQUEST);
       req.user = {
         id: decoded.id,
         email: decoded.email,
         role: decoded.role as Role,
-        company_id: company?.id
+        company_id: company?.id,
       };
     } else {
       req.user = {
-      id: decoded.id,
-      email: decoded.email,
-      role: decoded.role as Role,
+        id: decoded.id,
+        email: decoded.email,
+        role: decoded.role as Role,
       };
     }
 
     next();
-  } catch {
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
     throw new AppError('Invalid or expired token', StatusCodes.UNAUTHORIZED);
   }
 };
