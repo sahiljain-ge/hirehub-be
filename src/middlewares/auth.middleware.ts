@@ -8,9 +8,6 @@ import db from '../config/prisma.js';
 
 interface JwtPayload {
   id: string;
-  email: string;
-  role: string;
-  company_id?: string;
 }
 
 const authMiddleware = async (req: Request, _res: Response, next: NextFunction) => {
@@ -25,60 +22,88 @@ const authMiddleware = async (req: Request, _res: Response, next: NextFunction) 
   try {
     const decoded = verifyAccessToken(token) as JwtPayload;
 
-    const user = await db.user.findFirst({
-      where: {
-        id: decoded.id,
+    const user = await db.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
       },
     });
 
-    if (!user) throw new AppError('User not found', StatusCodes.UNAUTHORIZED);
-
-    if (user.role == Role.EMPLOYER) {
-      const company = await db.company.findUnique({
-        where: {
-          employer_id: user.id,
-        },
-      });
-      if (!company) throw new AppError('Incomplete company Profile', StatusCodes.BAD_REQUEST);
-      req.user = {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role as Role,
-        company_id: company?.id,
-      };
-    } else {
-      req.user = {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role as Role,
-      };
+    if (!user) {
+      throw new AppError('User no longer exists', StatusCodes.UNAUTHORIZED);
     }
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
 
     next();
   } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError('Invalid or expired token', StatusCodes.UNAUTHORIZED);
+    if (error instanceof AppError) throw error;
+
+    throw new AppError(
+      'Invalid or expired token',
+      StatusCodes.UNAUTHORIZED
+    );
   }
 };
 
-export const requireRole = (allowedRole: Role) => {
+export const requireRole = (allowedRoles: Role) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return sendFail(res, 'Authentication Required.', StatusCodes.UNAUTHORIZED);
     }
 
-    if (!allowedRole.includes(req.user.role)) {
-      return sendFail(res, 'Access Denied. Insufficient Permissions.', StatusCodes.FORBIDDEN);
+    if (allowedRoles !== req.user.role) {
+      return sendFail(
+        res,
+        'Access Denied. Insufficient Permissions.',
+        StatusCodes.FORBIDDEN
+      );
     }
 
     next();
   };
 };
 
+
 export const requireEmployer = requireRole(Role.EMPLOYER);
 export const requireJobSeeker = requireRole(Role.JOB_SEEKER);
 export const requireAdmin = requireRole(Role.ADMIN);
+
+export const requireCompleteCompanyProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.user) {
+    return sendFail(res, 'Authentication Required.', StatusCodes.UNAUTHORIZED);
+  }
+
+  if (req.user.role !== Role.EMPLOYER) {
+    return sendFail(res, 'Access Denied.', StatusCodes.FORBIDDEN);
+  }
+
+  const company = await db.company.findUnique({
+    where: { employer_id: req.user.id },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return sendFail(
+      res,
+      'Incomplete company profile.',
+      StatusCodes.BAD_REQUEST
+    );
+  }
+
+  req.user.company_id = company.id;
+
+  next();
+};
 
 export default authMiddleware;
