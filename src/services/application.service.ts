@@ -95,6 +95,12 @@ class ApplicationService {
       );
     }
 
+    if (application.status !== ApplicationStatus.APPLIED)
+      throw new AppError(
+        `Can't withdraw application after it has been processed`,
+        StatusCodes.BAD_REQUEST,
+      );
+
     await this.applicationRepository.withdrawApplication(applicationId);
 
     return { message: 'Application withdrawn successfully' };
