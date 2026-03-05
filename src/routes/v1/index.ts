@@ -15,6 +15,7 @@ import postsRoutes from './posts.routes.js';
 import bookmarkRoutes from './bookmark.routes.js'
 import jobSeekerProfileRoutes from './job-seeker-profile.routes.js';
 import jobSeekerAppRoutes from './jobseeker.routes.js';
+import metaDataRoutes from './meta.data.routes.js';
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use('/job-seeker/skills', jobSeekerSkillsRoutes);
 router.use('/job-seeker/bookmarks', bookmarkRoutes);
 router.use('/job-seeker/profile', jobSeekerProfileRoutes);
 router.use('/job-seeker', jobSeekerAppRoutes);
+router.use('/meta-data', metaDataRoutes);
 
 export default router;
